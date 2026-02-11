@@ -16,7 +16,8 @@ dotenv.config();
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
-// Rate limiting
+// Global rate limiting for all routes
+// Limits requests per IP address to prevent abuse
 app.use(rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
   maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
