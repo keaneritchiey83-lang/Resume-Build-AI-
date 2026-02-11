@@ -1,0 +1,144 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  TEAM_ADMIN
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELED
+  PAST_DUE
+}
+
+model User {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  password          String
+  firstName         String?
+  lastName          String?
+  role              UserRole           @default(USER)
+  stripeCustomerId  String?            @unique
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  resumes           Resume[]
+  subscription      Subscription?
+  teamMemberships   TeamMember[]
+  ownedTeams        Team[]             @relation("TeamOwner")
+  
+  @@index([email])
+}
+
+model Subscription {
+  id                String              @id @default(uuid())
+  userId            String              @unique
+  tier              SubscriptionTier    @default(FREE)
+  status            SubscriptionStatus  @default(ACTIVE)
+  stripeSubscriptionId String?          @unique
+  currentPeriodEnd  DateTime?
+  cancelAtPeriodEnd Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model Resume {
+  id                String             @id @default(uuid())
+  userId            String
+  title             String
+  template          String             @default("modern")
+  content           Json
+  atsScore          Float?
+  keywordMatches    Json?
+  impactScore       Float?
+  isPublic          Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  atsAnalyses       ATSAnalysis[]
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model ATSAnalysis {
+  id                String             @id @default(uuid())
+  resumeId          String
+  jobDescription    String
+  overallScore      Float
+  keywordScore      Float
+  semanticScore     Float
+  impactScore       Float
+  suggestions       Json
+  createdAt         DateTime           @default(now())
+  
+  resume            Resume             @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  @@index([resumeId])
+  @@index([createdAt])
+}
+
+model Team {
+  id                String             @id @default(uuid())
+  name              String
+  ownerId           String
+  subscriptionTier  SubscriptionTier   @default(PRO)
+  maxMembers        Int                @default(10)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  owner             User               @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members           TeamMember[]
+  
+  @@index([ownerId])
+}
+
+model TeamMember {
+  id                String             @id @default(uuid())
+  teamId            String
+  userId            String
+  role              String             @default("member")
+  joinedAt          DateTime           @default(now())
+  
+  team              Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
+}
+
+model CallbackPrediction {
+  id                String             @id @default(uuid())
+  resumeData        Json
+  jobDescription    String
+  predictionScore   Float
+  confidence        Float
+  factors           Json
+  createdAt         DateTime           @default(now())
+  
+  @@index([createdAt])
+}
