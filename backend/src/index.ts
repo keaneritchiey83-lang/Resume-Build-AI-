@@ -9,11 +9,18 @@ import adminRoutes from './routes/admin.routes';
 import teamRoutes from './routes/team.routes';
 import predictionRoutes from './routes/prediction.routes';
 import { errorHandler } from './middleware/errorHandler';
+import { rateLimit } from './middleware/rateLimit';
 
 dotenv.config();
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
+
+// Rate limiting
+app.use(rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
+  maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
+}));
 
 // Middleware
 app.use(cors({
