@@ -1,5 +1,16 @@
 # Security Summary
 
+## Recent Security Fixes
+
+### jsPDF Vulnerability Patch (2024-02-11)
+✅ **FIXED: jsPDF upgraded from 2.5.2 to 4.1.0**
+- Fixed: PDF Injection in AcroFormChoiceField allowing Arbitrary JavaScript Execution
+- Fixed: Denial of Service (DoS) via Unvalidated BMP Dimensions in BMPDecoder
+- Fixed: Denial of Service (DoS) vulnerability
+- Fixed: Regular Expression Denial of Service (ReDoS) Bypass
+- Fixed: Local File Inclusion/Path Traversal vulnerability
+- **Action Taken:** Upgraded jsPDF to version ^4.1.0 which patches all known vulnerabilities
+
 ## Security Measures Implemented
 
 ### Authentication & Authorization
