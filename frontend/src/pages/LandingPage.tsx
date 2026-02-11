@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FileText, Zap, TrendingUp, Users, CheckCircle } from 'lucide-react';
+import { FileText, Zap, TrendingUp, Users } from 'lucide-react';
 
 const LandingPage = () => {
   return (

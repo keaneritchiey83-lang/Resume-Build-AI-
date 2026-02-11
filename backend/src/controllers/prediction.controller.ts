@@ -39,11 +39,11 @@ export const predictCallback = async (req: AuthRequest, res: Response) => {
     // Save prediction
     await prisma.callbackPrediction.create({
       data: {
-        resumeData: resume.content,
+        resumeData: resume.content as any,
         jobDescription,
         predictionScore: prediction.score,
         confidence: prediction.confidence,
-        factors: prediction.factors,
+        factors: prediction.factors as any,
       },
     });
 

@@ -117,7 +117,7 @@ export class ATSEngine {
 
     for (const line of lines) {
       // Check if it's likely a bullet point (starts with bullet or dash)
-      if (line.trim().match(/^[•\-\*]/)) {
+      if (line.trim().match(/^[•\-*]/)) {
         bulletPoints++;
         let lineScore = 0;
 

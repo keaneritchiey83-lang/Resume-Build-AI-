@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { resumeAPI, atsAPI, predictionAPI } from '../services/api';
-import { Resume, ResumeContent } from '../types';
+import { resumeAPI } from '../services/api';
+import { ResumeContent } from '../types';
 
 const ResumeEditorPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [resume, setResume] = useState<Resume | null>(null);
   const [title, setTitle] = useState('My Resume');
   const [content, setContent] = useState<ResumeContent>({
     personalInfo: {},
@@ -18,17 +17,10 @@ const ResumeEditorPage = () => {
   const [loading, setLoading] = useState(!!id);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      loadResume();
-    }
-  }, [id]);
-
   const loadResume = async () => {
     try {
       const response = await resumeAPI.getOne(id!);
       const data = response.data.data;
-      setResume(data);
       setTitle(data.title);
       setContent(data.content as ResumeContent);
     } catch (error) {
@@ -39,6 +31,13 @@ const ResumeEditorPage = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (id) {
+      loadResume();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleSave = async () => {
     setSaving(true);

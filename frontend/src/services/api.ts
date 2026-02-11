@@ -43,10 +43,10 @@ export const authAPI = {
 
 // Resume API
 export const resumeAPI = {
-  create: (data: any) => api.post('/resumes', data),
+  create: (data: unknown) => api.post('/resumes', data),
   getAll: () => api.get('/resumes'),
   getOne: (id: string) => api.get(`/resumes/${id}`),
-  update: (id: string, data: any) => api.put(`/resumes/${id}`, data),
+  update: (id: string, data: unknown) => api.put(`/resumes/${id}`, data),
   delete: (id: string) => api.delete(`/resumes/${id}`),
 };
 
@@ -77,7 +77,7 @@ export const teamAPI = {
     api.post('/teams', data),
   getAll: () => api.get('/teams'),
   getOne: (id: string) => api.get(`/teams/${id}`),
-  update: (id: string, data: any) => api.put(`/teams/${id}`, data),
+  update: (id: string, data: unknown) => api.put(`/teams/${id}`, data),
   delete: (id: string) => api.delete(`/teams/${id}`),
   addMember: (id: string, data: { email: string; role?: string }) =>
     api.post(`/teams/${id}/members`, data),
@@ -92,7 +92,7 @@ export const adminAPI = {
   getUsers: (params?: { page?: number; limit?: number }) =>
     api.get('/admin/users', { params }),
   getUser: (id: string) => api.get(`/admin/users/${id}`),
-  updateUser: (id: string, data: any) => api.put(`/admin/users/${id}`, data),
+  updateUser: (id: string, data: unknown) => api.put(`/admin/users/${id}`, data),
   deleteUser: (id: string) => api.delete(`/admin/users/${id}`),
   getSubscriptions: () => api.get('/admin/subscriptions'),
 };
