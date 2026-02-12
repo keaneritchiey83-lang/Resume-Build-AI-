@@ -198,58 +198,57 @@ Built for enterprise and federal readiness:
   "target_grade": "GS-12 | WG-10 | SES",
   "format": "private_standard | federal_1_2_page | ses_ecq"
 }
-💼 Mission Focus
-Resume-Build-AI exists to:
-
-Reduce transition friction for service members
-
-Improve federal hiring success rates
-
-Translate military leadership into civilian value
-
-Support skilled trades advancement
-
-Modernize workforce career optimization
-
-📈 Roadmap
-Phase 1
-
-Full military translation engine
-
-GS & WG compliance automation
-
-Phase 2
-
-SES executive pathway module
-
-Enterprise RBAC
-
-Phase 3
-
-AI voice interview simulator
-
-Workforce intelligence analytics
-
-📊 Strategic Position
-Resume-Build-AI™ is positioned as:
-
-AI Career Operating System
-
-Military Transition Acceleration Platform
-
-Federal Hiring Intelligence Engine
-
-Skilled Trades Optimization Tool
-
-Enterprise SaaS Infrastructure
-
-📄 License
-Proprietary – All rights reserved.
-
-Resume-Build-AI™
-AI Resume Builder + Hiring Optimization Operating System
-
+```
 
 ---
 
-[You're invited to a private viewing, click here](https://pulsrai.com/Universal_Intelligence.html)
+# 💼 Mission Focus
+
+Resume-Build-AI exists to:
+
+- Reduce transition friction for service members  
+- Improve federal hiring success rates  
+- Translate military leadership into civilian value  
+- Support skilled trades advancement  
+- Modernize workforce career optimization  
+
+---
+
+# 📈 Roadmap
+
+## Phase 1
+- Full military translation engine  
+- GS & WG compliance automation  
+
+## Phase 2
+- SES executive pathway module  
+- Enterprise RBAC  
+
+## Phase 3
+- AI voice interview simulator  
+- Workforce intelligence analytics  
+
+---
+
+# 📊 Strategic Position
+
+Resume-Build-AI™ is positioned as:
+
+- AI Career Operating System  
+- Military Transition Acceleration Platform  
+- Federal Hiring Intelligence Engine  
+- Skilled Trades Optimization Tool  
+- Enterprise SaaS Infrastructure  
+
+---
+
+# 📄 License
+
+Proprietary – All rights reserved.
+
+**Resume-Build-AI™**  
+*AI Resume Builder + Hiring Optimization Operating System*
+
+---
+
+
