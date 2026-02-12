@@ -1,4 +1,4 @@
-import { render, Component } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import ErrorBoundary from '../components/ErrorBoundary';
 
