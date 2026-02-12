@@ -47,14 +47,15 @@ jobs:
       
       - name: Run backend linter
         working-directory: ./backend
-        run: npm run lint || true
+        run: npm run lint
       
       - name: Run backend tests
         working-directory: ./backend
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test_db
           JWT_SECRET: test-secret
-        run: npm test || true
+          NODE_ENV: test
+        run: npm test
       
       - name: Build backend
         working-directory: ./backend
@@ -82,11 +83,11 @@ jobs:
       
       - name: Run frontend linter
         working-directory: ./frontend
-        run: npm run lint || true
+        run: npm run lint
       
       - name: Run frontend tests
         working-directory: ./frontend
-        run: npm test || true
+        run: npm test run
       
       - name: Build frontend
         working-directory: ./frontend

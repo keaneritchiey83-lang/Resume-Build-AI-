@@ -45,10 +45,12 @@ app.use('/api/teams', team_routes_1.default);
 app.use('/api/predictions', prediction_routes_1.default);
 // Error handling middleware
 app.use(errorHandler_1.errorHandler);
-// Start server
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-});
+// Start server only if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+    });
+}
 exports.default = app;
 //# sourceMappingURL=index.js.map
