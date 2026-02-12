@@ -191,7 +191,8 @@ const addMember = async (req, res) => {
         res.status(201).json({ success: true, data: member });
     }
     catch (error) {
-        if (error.code === 'P2002') {
+        const err = error;
+        if (err.code === 'P2002') {
             return res.status(400).json({ message: 'User is already a team member' });
         }
         console.error('Add member error:', error);

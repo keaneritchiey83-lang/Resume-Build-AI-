@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, SubscriptionTier } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth';
+import { ErrorWithStatus } from '../types';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2023-10-16',
@@ -88,9 +89,10 @@ export const handleWebhook = async (req: Request, res: Response) => {
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-  } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+  } catch (err) {
+    const error = err as ErrorWithStatus;
+    console.error('Webhook signature verification failed:', error.message);
+    return res.status(400).send(`Webhook Error: ${error.message}`);
   }
 
   try {
@@ -180,7 +182,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   await prisma.subscription.update({
     where: { userId },
     data: {
-      tier: tier as any,
+      tier: tier as SubscriptionTier,
       status: 'ACTIVE',
       stripeSubscriptionId: stripeSubscription.id,
       currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
