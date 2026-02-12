@@ -251,4 +251,4 @@ Proprietary – All rights reserved.
 
 ---
 
-<a href="https://pulsrai.com/Universal_Intelligence.html">You're invited to a private viewing, click here</a>
+
