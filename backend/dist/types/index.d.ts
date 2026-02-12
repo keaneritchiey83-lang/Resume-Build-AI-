@@ -4,7 +4,6 @@ export interface PersonalInfo {
     email?: string;
     phone?: string;
     location?: string;
-    [key: string]: unknown;
 }
 export interface Experience {
     title?: string;
@@ -13,13 +12,11 @@ export interface Experience {
     achievements?: string[];
     startDate?: string;
     endDate?: string;
-    [key: string]: unknown;
 }
 export interface Education {
     degree?: string;
     school?: string;
     graduationDate?: string;
-    [key: string]: unknown;
 }
 export interface ResumeContent {
     personalInfo?: PersonalInfo;
@@ -27,7 +24,6 @@ export interface ResumeContent {
     experience?: Experience[];
     education?: Education[];
     skills?: string[];
-    [key: string]: unknown;
 }
 export interface ErrorWithStatus extends Error {
     status?: number;
