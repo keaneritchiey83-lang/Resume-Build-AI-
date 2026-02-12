@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth';
 import { ATSEngine } from '../services/ats.service';
+import { ResumeContent, Experience, Education } from '../types';
 
 const prisma = new PrismaClient();
 
@@ -28,7 +29,7 @@ export const analyzeResume = async (req: AuthRequest, res: Response) => {
     }
 
     // Extract text from resume content
-    const resumeText = extractTextFromContent(resume.content);
+    const resumeText = extractTextFromContent(resume.content as ResumeContent);
 
     // Analyze with ATS engine
     const analysis = ATSEngine.analyzeResume(resumeText, jobDescription);
@@ -101,7 +102,7 @@ export const getATSScore = async (req: AuthRequest, res: Response) => {
 };
 
 // Helper function to extract text from resume content
-function extractTextFromContent(content: any): string {
+function extractTextFromContent(content: ResumeContent | string): string {
   if (typeof content === 'string') {
     return content;
   }
@@ -118,7 +119,7 @@ function extractTextFromContent(content: any): string {
   }
 
   if (content.experience && Array.isArray(content.experience)) {
-    content.experience.forEach((exp: any) => {
+    content.experience.forEach((exp: Experience) => {
       text += `${exp.title || ''} ${exp.company || ''}\n`;
       if (exp.description) text += `${exp.description}\n`;
       if (exp.achievements && Array.isArray(exp.achievements)) {
@@ -130,7 +131,7 @@ function extractTextFromContent(content: any): string {
   }
 
   if (content.education && Array.isArray(content.education)) {
-    content.education.forEach((edu: any) => {
+    content.education.forEach((edu: Education) => {
       text += `${edu.degree || ''} ${edu.school || ''}\n`;
     });
   }
