@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth';
+import { ErrorWithStatus } from '../types';
 
 const prisma = new PrismaClient();
 
@@ -207,8 +208,9 @@ export const addMember = async (req: AuthRequest, res: Response) => {
     });
 
     res.status(201).json({ success: true, data: member });
-  } catch (error: any) {
-    if (error.code === 'P2002') {
+  } catch (error) {
+    const err = error as ErrorWithStatus & { code?: string };
+    if (err.code === 'P2002') {
       return res.status(400).json({ message: 'User is already a team member' });
     }
     console.error('Add member error:', error);

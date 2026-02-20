@@ -1,4 +1,5 @@
 import { Resume, ATSAnalysis } from '@prisma/client';
+import { ResumeContent, Experience } from '../types';
 
 export interface CallbackPrediction {
   score: number;
@@ -62,7 +63,7 @@ export class CallbackPredictor {
    * Calculate how relevant the experience is
    */
   private static calculateExperienceRelevance(resume: Resume, jobDescription: string): number {
-    const content = resume.content as any;
+    const content = resume.content as ResumeContent;
     
     if (!content.experience || !Array.isArray(content.experience)) {
       return 0.3; // Low relevance if no experience data
@@ -82,7 +83,7 @@ export class CallbackPredictor {
     // Check for industry keywords in experience
     const industryKeywords = this.extractIndustryKeywords(jobDescLower);
     const experienceText = content.experience
-      .map((exp: any) => `${exp.title} ${exp.company} ${exp.description || ''}`)
+      .map((exp: Experience) => `${exp.title} ${exp.company} ${exp.description || ''}`)
       .join(' ')
       .toLowerCase();
 
@@ -117,7 +118,7 @@ export class CallbackPredictor {
   /**
    * Match seniority level
    */
-  private static matchSeniority(experience: any[], jobDesc: string): number {
+  private static matchSeniority(experience: Experience[], jobDesc: string): number {
     const seniorityLevels = {
       entry: ['entry', 'junior', 'associate', 'graduate'],
       mid: ['mid', 'intermediate'],

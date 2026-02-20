@@ -1,14 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
+import { ErrorWithStatus } from '../types';
 
 export const errorHandler = (
-  err: Error,
+  err: ErrorWithStatus,
   req: Request,
   res: Response,
   _next: NextFunction
 ) => {
   console.error(err.stack);
 
-  const statusCode = (err as any).statusCode || 500;
+  const statusCode = err.statusCode || err.status || 500;
   const message = err.message || 'Internal Server Error';
 
   res.status(statusCode).json({

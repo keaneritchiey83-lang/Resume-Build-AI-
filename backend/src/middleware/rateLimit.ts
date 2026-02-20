@@ -45,12 +45,14 @@ export const rateLimit = (options: {
   };
 };
 
-// Cleanup old entries every hour
-setInterval(() => {
-  const now = Date.now();
-  Object.keys(store).forEach((key) => {
-    if (now > store[key].resetTime) {
-      delete store[key];
-    }
-  });
-}, 3600000);
+// Cleanup old entries every hour (only in non-test environment)
+if (process.env.NODE_ENV !== 'test') {
+  setInterval(() => {
+    const now = Date.now();
+    Object.keys(store).forEach((key) => {
+      if (now > store[key].resetTime) {
+        delete store[key];
+      }
+    });
+  }, 3600000);
+}

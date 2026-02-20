@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth';
 import { CallbackPredictor } from '../services/prediction.service';
 
@@ -39,11 +39,11 @@ export const predictCallback = async (req: AuthRequest, res: Response) => {
     // Save prediction
     await prisma.callbackPrediction.create({
       data: {
-        resumeData: resume.content as any,
+        resumeData: resume.content as unknown as Prisma.InputJsonValue,
         jobDescription,
         predictionScore: prediction.score,
         confidence: prediction.confidence,
-        factors: prediction.factors as any,
+        factors: prediction.factors as unknown as Prisma.InputJsonValue,
       },
     });
 
