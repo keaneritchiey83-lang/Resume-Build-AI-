@@ -33,6 +33,19 @@
 4. Commission an independent security review. Staging failover may run **only** with explicit staging isolation, approved impact window, authorized reviewers and documented rollback.
 5. Approve production traffic only when all release gates pass and the deployment owner signs off.
 
+## Mandatory evidence for production release
+
+**The next required evidence is a successful GitHub Actions build and live integration test, followed by security approval and an authorized staging failover exercise.**
+
+Evidence must be recorded for the **same commit SHA and release image digests**, in this order:
+
+1. Successful GitHub Actions `ci.yml` run (complete backend and frontend builds and tests), with run URL and ID.
+2. Successful `phase14-live-validation.yml` run (isolated PostgreSQL migrations, Docker Compose and authenticated integration smoke), with run URL and ID.
+3. Independent security review, documented findings disposition, named reviewer and signed approval.
+4. Approved **staging-only** failover-and-rollback exercise, protected environment reviewer, run URL and verified restoration.
+
+The release remains **HOLD** until all required evidence has been collected and a deployment owner separately authorizes production. A source gate or dry-run preflight alone cannot establish readiness. No production cutover is authorized.
+
 ## What the companion GitHub workflow does
 
 `.github/workflows/global-career-release-gate.yml` is a non-deploying, fail-closed source-presence gate. It records **BLOCKED** when the application source is absent. It does **not** install npm, migrate a database, change infrastructure, or claim production readiness.
