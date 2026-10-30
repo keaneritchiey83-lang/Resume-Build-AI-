@@ -7,13 +7,17 @@ on:
         description: "Type FAILOVER STAGING to acknowledge a controlled staging outage"
         type: string
         required: true
+      approved_change_id:
+        description: "Preapproved staging change ticket ID (independent approver required)"
+        type: string
+        required: true
 concurrency:
   group: phase14-staging-failover
   cancel-in-progress: false
 jobs:
   drill:
     environment: staging
-    if: ${{ inputs.confirm_staging_impact == 'FAILOVER STAGING' }}
+    if: ${{ inputs.confirm_staging_impact == 'FAILOVER STAGING' && inputs.approved_change_id != '' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,8 +34,10 @@ jobs:
           mkdir -p ~/.kube
           printf '%s' "$STAGING_KUBECONFIG_B64" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
-      - name: Run controlled failover and restore original selector
+      - name: Run controlled failover and verify original selector restored
         env:
+          STAGING_CLUSTER_API_SERVER: ${{ vars.STAGING_CLUSTER_API_SERVER }}
+          APPROVAL_ID: ${{ inputs.approved_change_id }}
           GLOBAL_URL: ${{ vars.STAGING_GLOBAL_URL }}
           FAILED_URL: ${{ vars.STAGING_FAILED_REGION_URL }}
           SURVIVOR_URL: ${{ vars.STAGING_SURVIVOR_URL }}
@@ -46,4 +52,6 @@ jobs:
             --failed-region-url "$FAILED_URL" \
             --survivor-url "$SURVIVOR_URL" \
             --survivor-region "$SURVIVOR_REGION" \
+            --expected-cluster-server "$STAGING_CLUSTER_API_SERVER" \
+            --approval-id "$APPROVAL_ID" \
             --execute --ack-impact
