@@ -7,7 +7,7 @@ COPY src ./src
 COPY scripts ./scripts
 ARG VITE_API_URL=
 ENV VITE_API_URL=${VITE_API_URL}
-RUN if test -f package-lock.json; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi \
+RUN npm ci --no-audit --no-fund \
  && npm run build \
  && npm run test:build
 
