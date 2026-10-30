@@ -1,0 +1,34 @@
+name: Temporary Terraform formatter (release branch only)
+on:
+  push:
+    branches: [release/phase15-17-ci-readiness-20261029]
+    paths:
+      - .github/workflows/phase15-17-terraform-format-repair.yml
+permissions:
+  contents: write
+jobs:
+  terraform-format:
+    if: github.repository == 'keaneritchiey83-lang/Resume-Build-AI-' && github.ref == 'refs/heads/release/phase15-17-ci-readiness-20261029'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/phase15-17-ci-readiness-20261029
+          persist-credentials: true
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+      - name: Format Terraform only, commit corrections to release branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          terraform fmt -recursive infra
+          git add -- 'infra/**/*.tf' || git add infra
+          if git diff --cached --quiet; then
+            echo "Terraform files already formatted"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'style: terraform fmt on release branch'
+          git push origin HEAD:refs/heads/release/phase15-17-ci-readiness-20261029
