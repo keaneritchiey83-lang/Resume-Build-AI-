@@ -19,12 +19,7 @@ jobs:
           node-version: "22"
       - name: Install frontend dependencies (connected CI runner)
         working-directory: frontend
-        run: |
-          if test -f package-lock.json; then
-            npm ci --no-audit --no-fund --no-progress
-          else
-            npm install --no-audit --no-fund --no-progress
-          fi
+        run: npm ci --no-audit --no-fund --no-progress
       - name: Compile TypeScript and build Vite production assets
         working-directory: frontend
         run: npm run build
