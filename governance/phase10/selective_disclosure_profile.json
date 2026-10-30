@@ -1,0 +1,16 @@
+{
+  "rfc9901": {
+    "disclosure_encoding": "base64url(JSON array [salt, claim name, claim value])",
+    "digest": "SHA-256 over ASCII disclosure string",
+    "issuer_commitment": "top-level _sd array",
+    "default_hash_algorithm": "sha-256",
+    "key_binding": "KB-JWT sd_hash over issuer JWT plus selected disclosures"
+  },
+  "implementation_scope": {
+    "top_level_selective_claims": true,
+    "nested_selective_claims": false,
+    "decoy_digests": false,
+    "holder_binding": "EC P-256 JWK",
+    "warning": "Reference implementation intentionally supports a bounded subset; expand only with conformance tests."
+  }
+}

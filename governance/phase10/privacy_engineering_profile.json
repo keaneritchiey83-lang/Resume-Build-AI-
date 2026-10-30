@@ -1,0 +1,39 @@
+{
+  "version": "2026-09",
+  "data_discovery": {
+    "mode": "schema_metadata_only",
+    "samples_plaintext_values": false,
+    "organization_custom_rules": true
+  },
+  "consent_receipts": {
+    "append_only_event_style": true,
+    "hash_chained_per_user_purpose": true,
+    "captures": [
+      "purpose",
+      "action",
+      "policy_version",
+      "lawful_basis",
+      "processing_purposes",
+      "data_categories"
+    ]
+  },
+  "deletion_orchestration": {
+    "dry_run_supported": true,
+    "identity_verified_erasure_request_supported": true,
+    "legal_hold_blocks_deletion": true,
+    "account_finalization": "pseudonymize_and_disable"
+  },
+  "privacy_analytics": {
+    "method": "Laplace mechanism for fixed count queries",
+    "minimum_cohort_suppression": true,
+    "daily_epsilon_budget": true,
+    "random_source": "system CSPRNG",
+    "reference": "NIST SP 800-226"
+  },
+  "cryptographic_audit": {
+    "hash_chain": "SHA-256",
+    "optional_entry_signature": "Ed25519",
+    "payload_storage": "digest only",
+    "append_only_policy": true
+  }
+}

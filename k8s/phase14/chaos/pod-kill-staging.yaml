@@ -1,0 +1,15 @@
+# Requires Chaos Mesh CRDs and RBAC. NEVER apply automatically in production.
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: career-ai-one-pod-kill
+  namespace: career-ai-staging
+spec:
+  action: pod-kill
+  mode: one
+  duration: 30s
+  selector:
+    namespaces:
+      - career-ai-staging
+    labelSelectors:
+      app.kubernetes.io/name: career-api

@@ -1,0 +1,37 @@
+# Copy to .github/workflows/weekly-staging-failover.yml; configure secrets first.
+# Runs disruptive exercise in STAGING ONLY, with restoration in a finally clause.
+name: Weekly Phase 14 staging failover exercise
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 0"
+concurrency:
+  group: phase14-staging-failover
+  cancel-in-progress: false
+jobs:
+  failover:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.30.0
+      - name: Configure staging Kubernetes access
+        env:
+          STAGING_KUBECONFIG_B64: ${{ secrets.STAGING_KUBECONFIG_B64 }}
+        run: |
+          test -n "$STAGING_KUBECONFIG_B64"
+          mkdir -p ~/.kube
+          printf '%s' "$STAGING_KUBECONFIG_B64" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+      - name: Run failover exercise, always restoring replicas
+        env:
+          STAGING_GLOBAL_URL: ${{ vars.STAGING_GLOBAL_URL }}
+          STAGING_SURVIVOR_URL: ${{ vars.STAGING_SURVIVOR_URL }}
+          STAGING_FAILED_REGION_URL: ${{ vars.STAGING_FAILED_REGION_URL }}
+          STAGING_SURVIVOR_REGION: ${{ vars.STAGING_SURVIVOR_REGION }}
+          STAGING_FAILOVER_CONTEXT: ${{ vars.STAGING_FAILOVER_CONTEXT }}
+        run: |
+          python ops/failover/failover_drill.py             --kube-context "$STAGING_FAILOVER_CONTEXT"             --namespace global-career-ai-staging             --global-url "$STAGING_GLOBAL_URL"             --survivor-url "$STAGING_SURVIVOR_URL" \
+            --failed-region-url "$STAGING_FAILED_REGION_URL"             --survivor-region "$STAGING_SURVIVOR_REGION"             --execute --ack-impact

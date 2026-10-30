@@ -1,0 +1,96 @@
+
+name: Phase 12 Federation and Runtime Security
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "31 3 * * 2"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  governance-and-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: career_test
+          POSTGRES_USER: career
+          POSTGRES_PASSWORD: career
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U career -d career_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    env:
+      DATABASE_URL: postgresql+asyncpg://career:career@localhost:5432/career_test
+      REDIS_URL: redis://localhost:6379/0
+      JWT_SECRET: ci-only-jwt-secret-which-is-long-enough-1234567890
+      LOCAL_MASTER_KEYS_JSON: '{"local-v1":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}'
+      LOCAL_CURRENT_KEY_ID: local-v1
+      PHASE12_REQUIRE_HSM_SIGNING: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install backend
+        run: |
+          cd backend
+          pip install -e ".[dev]"
+      - name: Compile
+        run: python -m compileall backend/app backend/tests backend/alembic backend/scripts
+      - name: Tests
+        run: |
+          cd backend
+          pytest -q
+      - name: Governance gate
+        run: python backend/scripts/run_phase12_governance_gate.py
+
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Parse YAML
+        run: |
+          pip install pyyaml
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+          files = list(Path("k8s").rglob("*.yaml")) + list(Path(".github/workflows").glob("*.yml"))
+          for path in files:
+              list(yaml.safe_load_all(path.read_text()))
+          print(f"Parsed {len(files)} YAML files")
+          PY
+
+  runtime-security:
+    if: ${{ vars.PENTEST_TARGET_URL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.32.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+      - name: ZAP baseline on authorized target
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: ${{ vars.PENTEST_TARGET_URL }}
+          fail_action: true
+          allow_issue_writing: false

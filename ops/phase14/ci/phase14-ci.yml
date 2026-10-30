@@ -1,0 +1,22 @@
+# Copy to .github/workflows/phase14-ci.yml after integrating into Phase 13 repo.
+name: Phase 14 secure orchestration CI
+on:
+  push:
+  pull_request:
+jobs:
+  phase14:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install backend and dev dependencies
+        run: pip install -e ".[dev]"
+      - name: Run governance checks
+        run: python scripts/run_phase14_governance_gate.py
+      - name: Run estimated cost/N-1 capacity gate
+        run: python ../ops/capacity/capacity_gate.py ../ops/capacity/example-budget.json

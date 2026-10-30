@@ -1,0 +1,84 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      cloud:
+        description: Deployment target
+        required: true
+        type: choice
+        options:
+          - aws
+          - azure
+      action:
+        description: Terraform action
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  aws:
+    if: inputs.cloud == 'aws'
+    runs-on: ubuntu-latest
+    environment: production-aws
+    defaults:
+      run:
+        working-directory: infra/aws
+    env:
+      TF_VAR_region: ${{ vars.AWS_REGION }}
+      TF_VAR_api_image: ${{ vars.AWS_API_IMAGE }}
+      TF_VAR_app_secret_arn: ${{ secrets.AWS_APP_SECRET_ARN }}
+      TF_VAR_acm_certificate_arn: ${{ vars.AWS_ACM_CERTIFICATE_ARN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - run: terraform fmt -check -recursive
+      - run: terraform init -input=false
+      - run: terraform validate
+      - run: terraform plan -input=false -out=tfplan
+      - if: inputs.action == 'apply'
+        run: terraform apply -input=false -auto-approve tfplan
+
+  azure:
+    if: inputs.cloud == 'azure'
+    runs-on: ubuntu-latest
+    environment: production-azure
+    defaults:
+      run:
+        working-directory: infra/azure
+    env:
+      ARM_USE_OIDC: "true"
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_api_image: ${{ vars.AZURE_API_IMAGE }}
+      TF_VAR_postgres_admin_password: ${{ secrets.AZURE_POSTGRES_ADMIN_PASSWORD }}
+      TF_VAR_database_url_secret_id: ${{ vars.AZURE_DATABASE_URL_SECRET_ID }}
+      TF_VAR_redis_url_secret_id: ${{ vars.AZURE_REDIS_URL_SECRET_ID }}
+      TF_VAR_jwt_secret_id: ${{ vars.AZURE_JWT_SECRET_ID }}
+      TF_VAR_oidc_session_secret_id: ${{ vars.AZURE_OIDC_SESSION_SECRET_ID }}
+      TF_VAR_openai_api_key_secret_id: ${{ vars.AZURE_OPENAI_API_KEY_SECRET_ID }}
+      TF_VAR_oidc_client_secret_id: ${{ vars.AZURE_OIDC_CLIENT_SECRET_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - run: terraform fmt -check -recursive
+      - run: terraform init -input=false
+      - run: terraform validate
+      - run: terraform plan -input=false -out=tfplan
+      - if: inputs.action == 'apply'
+        run: terraform apply -input=false -auto-approve tfplan

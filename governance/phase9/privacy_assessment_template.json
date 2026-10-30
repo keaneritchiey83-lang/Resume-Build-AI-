@@ -1,0 +1,39 @@
+{
+  "name": "Career AI candidate assistance",
+  "system_or_process": "global-career-ai",
+  "processing_purposes": [
+    "career preparation",
+    "job matching",
+    "interview practice"
+  ],
+  "data_categories": [
+    "candidate profile",
+    "resume",
+    "verified credentials",
+    "application tracking"
+  ],
+  "data_subjects": [
+    "candidate"
+  ],
+  "jurisdictions": [
+    "review per deployment"
+  ],
+  "lawful_bases": [
+    "to be completed by privacy counsel"
+  ],
+  "recipients": [
+    "candidate",
+    "authorized organization users"
+  ],
+  "retention_summary": "Map each data class to an approved retention policy.",
+  "international_transfers": false,
+  "automated_decision_support": true,
+  "high_risk_processing": false,
+  "mitigations": [
+    "encryption",
+    "tenant isolation",
+    "human control",
+    "protected-trait exclusion",
+    "data minimization"
+  ]
+}

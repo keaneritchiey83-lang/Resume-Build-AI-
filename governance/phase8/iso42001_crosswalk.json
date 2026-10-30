@@ -1,0 +1,74 @@
+{
+  "title": "ISO/IEC 42001 high-level implementation crosswalk",
+  "version": "2026-09-15",
+  "standard": "ISO/IEC 42001:2023",
+  "source": "https://www.iso.org/standard/42001",
+  "copyright_notice": "This file does not reproduce the copyrighted standard or claim certification.",
+  "management_system_themes": [
+    {
+      "key": "AIMS-CONTEXT",
+      "theme": "Context, scope, interested parties and AI inventory",
+      "evidence": [
+        "AIMS scope",
+        "AI inventory",
+        "stakeholder register"
+      ]
+    },
+    {
+      "key": "AIMS-LEADERSHIP",
+      "theme": "Leadership, policy, accountability and roles",
+      "evidence": [
+        "AI policy",
+        "responsibility matrix",
+        "approvals"
+      ]
+    },
+    {
+      "key": "AIMS-PLANNING",
+      "theme": "AI risks, opportunities, objectives and treatment",
+      "evidence": [
+        "risk assessments",
+        "treatment plans",
+        "objectives"
+      ]
+    },
+    {
+      "key": "AIMS-SUPPORT",
+      "theme": "Resources, competence, awareness and controlled documentation",
+      "evidence": [
+        "training records",
+        "competence evidence",
+        "document control"
+      ]
+    },
+    {
+      "key": "AIMS-OPERATION",
+      "theme": "Operational lifecycle, impact, data and supplier controls",
+      "evidence": [
+        "lifecycle procedures",
+        "data controls",
+        "supplier due diligence"
+      ]
+    },
+    {
+      "key": "AIMS-PERFORMANCE",
+      "theme": "Monitoring, measurement, internal audit and management review",
+      "evidence": [
+        "metrics",
+        "evals",
+        "audit records",
+        "management review"
+      ]
+    },
+    {
+      "key": "AIMS-IMPROVEMENT",
+      "theme": "Nonconformity, corrective action and continual improvement",
+      "evidence": [
+        "incidents",
+        "CAPA",
+        "improvement register"
+      ]
+    }
+  ],
+  "disclaimer": "Use a licensed copy of ISO/IEC 42001 and a qualified certification body for conformity/certification work."
+}

@@ -1,0 +1,20 @@
+# Example official Falco Helm values.
+driver:
+  kind: modern_ebpf
+
+falcosidekick:
+  enabled: true
+  webui:
+    enabled: false
+  config:
+    customfields: "environment:production,platform:global-career-ai"
+    webhook:
+      # Route through an internal sensor gateway that adds X-Runtime-Sensor-Token
+      # and normalizes Falco payloads for /v1/phase12/runtime/events.
+      address: "http://runtime-sensor-gateway.career-ai.svc.cluster.local:8080/falco"
+      minimumpriority: "warning"
+      method: "POST"
+
+falco:
+  json_output: true
+  json_include_output_property: true

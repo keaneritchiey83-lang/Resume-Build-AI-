@@ -1,0 +1,1 @@
+"""Global Career Architecture AI."""

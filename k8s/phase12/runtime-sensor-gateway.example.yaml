@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runtime-sensor-gateway
+  namespace: career-ai
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: runtime-sensor-gateway
+  template:
+    metadata:
+      labels:
+        app: runtime-sensor-gateway
+    spec:
+      serviceAccountName: runtime-sensor
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: gateway
+          image: ghcr.io/REPLACE_ME/global-career-runtime-sensor:phase12
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+          env:
+            - name: CAREER_RUNTIME_ENDPOINT
+              value: http://career-api.career-ai.svc.cluster.local:8000/v1/phase12/runtime/events
+            - name: RUNTIME_SENSOR_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: career-runtime
+                  key: PHASE12_RUNTIME_SENSOR_TOKEN
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: runtime-sensor-gateway
+  namespace: career-ai
+spec:
+  selector:
+    app: runtime-sensor-gateway
+  ports:
+    - port: 8080
+      targetPort: 8080

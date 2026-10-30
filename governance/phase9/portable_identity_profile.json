@@ -1,0 +1,28 @@
+{
+  "phase": "9A",
+  "purpose": "Portable candidate-owned career records and wallet interoperability boundaries.",
+  "standards": {
+    "w3c_vc_data_model_2_0": {
+      "status": "W3C Recommendation",
+      "date": "2025-05-15",
+      "note": "Use the holder/issuer/verifier model. An unsigned export must never be labeled cryptographically verified."
+    },
+    "openid4vp_1_0": {
+      "status": "OpenID Final Specification",
+      "approved": "2025-07-10",
+      "note": "Presentation protocol support belongs at wallet/verifier integration boundaries."
+    },
+    "openid4vci_1_0": {
+      "status": "OpenID Final Specification",
+      "approved": "2025-09-16",
+      "note": "Issuance integration requires an authorized issuer and real signing/key management."
+    }
+  },
+  "trust_boundaries": {
+    "candidate_private_keys": "never stored by the platform",
+    "wallet_registration": "public holder DID and public protocol metadata only",
+    "portable_record": "unsigned unless an approved cryptographic issuer signs it",
+    "verified_source_credentials": "retain their original verification evidence and status",
+    "contact_data": "excluded unless candidate explicitly opts in"
+  }
+}

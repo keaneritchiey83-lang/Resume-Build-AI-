@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: phase13-model-gateway-egress-example
+  namespace: career-ai
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: career-api
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: career-ai
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 4317
+    # Add only the fixed model/confidential-inference egress destination used
+    # by your environment. Do not open 0.0.0.0/0 merely for model access.

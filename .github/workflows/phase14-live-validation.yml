@@ -1,0 +1,67 @@
+name: Phase 14 frontend, live database and Compose validation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install frontend dependencies (connected CI runner)
+        working-directory: frontend
+        run: |
+          if test -f package-lock.json; then
+            npm ci --no-audit --no-fund --no-progress
+          else
+            npm install --no-audit --no-fund --no-progress
+          fi
+      - name: Compile TypeScript and build Vite production assets
+        working-directory: frontend
+        run: npm run build
+      - name: Verify emitted frontend bundle
+        working-directory: frontend
+        run: npm run test:build
+
+  live-compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Confirm static deployment security controls before starting any services
+        run: python ops/phase15_17/security_review.py
+      - name: Check local validator logic
+        run: python -m unittest discover -s ops/phase14/validation -p 'test_*.py' -v
+      - name: Prepare isolated CI secrets (Phase 14 remains disabled)
+        run: python ops/phase14/validation/create_ci_env.py
+      - name: Build and start PostgreSQL, Redis, migrations, API, worker, beat and frontend
+        run: docker compose up --build -d
+      - name: Confirm every required Compose service is healthy
+        run: docker compose ps
+      - name: Verify live pgvector database and deployed HTTP endpoints
+        run: python ops/phase14/validation/live_smoke.py --wait-seconds 180
+      - name: Exercise authenticated Phase 15–17 workflows through the public web proxy
+        run: python ops/phase15_17/integration_smoke.py --ack-isolated-stack --base-url http://127.0.0.1:5173
+      - name: Capture failure logs
+        if: failure()
+        run: docker compose logs --no-color --tail=120 || true
+      - name: Stop stack and wipe CI database volumes
+        if: always()
+        run: |
+          docker compose down --volumes --remove-orphans || true
+          rm -f .env
+
+# This workflow validates a local live Compose stack, NOT cloud active-active
+# deployment or region failover. A separate manual staging drill is required.

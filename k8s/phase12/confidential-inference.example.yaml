@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: confidential-inference-gateway
+  namespace: career-ai
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: confidential-inference-gateway
+  template:
+    metadata:
+      labels:
+        app: confidential-inference-gateway
+        confidential-compute: "required"
+    spec:
+      serviceAccountName: career-api
+      nodeSelector:
+        confidential-compute: "true"
+      containers:
+        - name: gateway
+          image: ghcr.io/REPLACE_ME/confidential-inference-gateway:phase12
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8443
+# Production must bind this workload to the cloud provider's verified
+# confidential-compute node/attestation mechanism before releasing secrets.
