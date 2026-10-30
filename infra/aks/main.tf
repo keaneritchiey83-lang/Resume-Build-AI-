@@ -113,8 +113,7 @@ resource "azurerm_role_assignment" "key_secrets" {
 
 resource "azurerm_federated_identity_credential" "api" {
   name                = "${local.name}-api"
-  resource_group_name = var.resource_group_name
-  parent_id           = azurerm_user_assigned_identity.workload.id
+  user_assigned_identity_id = azurerm_user_assigned_identity.workload.id
   audience            = ["api://AzureADTokenExchange"]
   issuer              = azurerm_kubernetes_cluster.main.oidc_issuer_url
   subject             = "system:serviceaccount:career-ai:career-api"
@@ -122,8 +121,7 @@ resource "azurerm_federated_identity_credential" "api" {
 
 resource "azurerm_federated_identity_credential" "worker" {
   name                = "${local.name}-worker"
-  resource_group_name = var.resource_group_name
-  parent_id           = azurerm_user_assigned_identity.workload.id
+  user_assigned_identity_id = azurerm_user_assigned_identity.workload.id
   audience            = ["api://AzureADTokenExchange"]
   issuer              = azurerm_kubernetes_cluster.main.oidc_issuer_url
   subject             = "system:serviceaccount:career-ai:career-worker"
@@ -131,8 +129,7 @@ resource "azurerm_federated_identity_credential" "worker" {
 
 resource "azurerm_federated_identity_credential" "beat" {
   name                = "${local.name}-beat"
-  resource_group_name = var.resource_group_name
-  parent_id           = azurerm_user_assigned_identity.workload.id
+  user_assigned_identity_id = azurerm_user_assigned_identity.workload.id
   audience            = ["api://AzureADTokenExchange"]
   issuer              = azurerm_kubernetes_cluster.main.oidc_issuer_url
   subject             = "system:serviceaccount:career-ai:career-beat"
