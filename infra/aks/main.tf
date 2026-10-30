@@ -42,14 +42,14 @@ resource "azurerm_kubernetes_cluster" "main" {
   node_os_upgrade_channel   = "NodeImage"
 
   default_node_pool {
-    name                 = "system"
-    vm_size              = var.node_vm_size
-    vnet_subnet_id       = var.aks_subnet_id
-    auto_scaling_enabled = true
-    min_count            = var.node_min_count
-    max_count            = var.node_max_count
-    node_count           = var.node_min_count
-    os_disk_type         = "Managed"
+    name                         = "system"
+    vm_size                      = var.node_vm_size
+    vnet_subnet_id               = var.aks_subnet_id
+    auto_scaling_enabled         = true
+    min_count                    = var.node_min_count
+    max_count                    = var.node_max_count
+    node_count                   = var.node_min_count
+    os_disk_type                 = "Managed"
     only_critical_addons_enabled = false
 
     upgrade_settings {

@@ -192,12 +192,12 @@ resource "azurerm_postgresql_flexible_server_configuration" "extensions" {
 }
 
 resource "azurerm_managed_redis" "main" {
-  name                  = "${local.name}-redis"
-  location              = azurerm_resource_group.main.location
-  resource_group_name   = azurerm_resource_group.main.name
-  sku_name              = var.managed_redis_sku_name
+  name                      = "${local.name}-redis"
+  location                  = azurerm_resource_group.main.location
+  resource_group_name       = azurerm_resource_group.main.name
+  sku_name                  = var.managed_redis_sku_name
   high_availability_enabled = true
-  public_network_access = "Disabled"
+  public_network_access     = "Disabled"
 
   default_database {
     access_keys_authentication_enabled = true

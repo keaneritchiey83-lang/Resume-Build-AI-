@@ -182,25 +182,25 @@ resource "aws_db_subnet_group" "main" {
 }
 
 resource "aws_db_instance" "postgres" {
-  identifier                    = "${local.name}-postgres"
-  engine                        = "postgres"
-  engine_version                = "16"
-  instance_class                = var.db_instance_class
-  allocated_storage             = 50
-  max_allocated_storage         = 500
-  storage_encrypted             = true
-  kms_key_id                    = aws_kms_key.career.arn
-  db_name                       = "career"
-  username                      = "career_admin"
-  manage_master_user_password   = true
-  db_subnet_group_name          = aws_db_subnet_group.main.name
-  vpc_security_group_ids        = [aws_security_group.data.id]
-  publicly_accessible           = false
-  backup_retention_period       = 14
-  deletion_protection           = var.deletion_protection
-  skip_final_snapshot           = !var.deletion_protection
-  performance_insights_enabled  = true
-  auto_minor_version_upgrade    = true
+  identifier                   = "${local.name}-postgres"
+  engine                       = "postgres"
+  engine_version               = "16"
+  instance_class               = var.db_instance_class
+  allocated_storage            = 50
+  max_allocated_storage        = 500
+  storage_encrypted            = true
+  kms_key_id                   = aws_kms_key.career.arn
+  db_name                      = "career"
+  username                     = "career_admin"
+  manage_master_user_password  = true
+  db_subnet_group_name         = aws_db_subnet_group.main.name
+  vpc_security_group_ids       = [aws_security_group.data.id]
+  publicly_accessible          = false
+  backup_retention_period      = 14
+  deletion_protection          = var.deletion_protection
+  skip_final_snapshot          = !var.deletion_protection
+  performance_insights_enabled = true
+  auto_minor_version_upgrade   = true
 }
 
 resource "aws_elasticache_subnet_group" "main" {
@@ -232,9 +232,9 @@ resource "aws_iam_role" "execution" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Service = "ecs-tasks.amazonaws.com" }
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
@@ -268,9 +268,9 @@ resource "aws_iam_role" "task" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Service = "ecs-tasks.amazonaws.com" }
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }

@@ -70,8 +70,8 @@ variable "confidential_node_group_enabled" {
 }
 
 variable "confidential_node_instance_types" {
-  type        = list(string)
-  default     = ["m6i.xlarge"]
+  type    = list(string)
+  default = ["m6i.xlarge"]
 }
 
 variable "confidential_node_min_size" {
