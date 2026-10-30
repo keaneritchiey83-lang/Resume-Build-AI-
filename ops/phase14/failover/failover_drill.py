@@ -85,7 +85,7 @@ def main() -> int:
                       "context": args.kube_context, "namespace": args.namespace,
                       "service": args.service, "timeout_seconds": args.timeout_seconds}))
     if not args.execute:
-        print("DRY_RUN ONLY: no Kubernetes resources changed")
+        print("DRY_RUN ONLY: No resources changed")
         return 0
     if not args.ack_impact or not args.approval_id.strip() or not args.expected_cluster_server:
         parser.error("Execution requires --ack-impact, --approval-id and --expected-cluster-server")
