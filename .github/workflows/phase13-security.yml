@@ -78,7 +78,22 @@ jobs:
           PY
       - name: Enforce Phase 13 image defaults
         run: |
-          grep -R --line-number "phase13" k8s/base
+          # Verify versioned image overrides rather than a literal phase name.
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+          cfg = yaml.safe_load(Path("k8s/base/kustomization.yaml").read_text())
+          images = cfg.get("images", [])
+          expected = {"career-api", "career-web"}
+          actual = {image.get("name") for image in images}
+          assert actual == expected, f"Unexpected image set: {actual}"
+          for image in images:
+              repo = image.get("newName", "")
+              tag = image.get("newTag", "")
+              assert repo.startswith("ghcr.io/"), f"Non-GHCR image: {repo}"
+              assert tag and tag.lower() not in {"latest", "main", "stable"}, f"Floating image tag: {tag}"
+          print("Validated explicit GHCR image names and versioned tags")
+          PY
           if grep -R --line-number -E 'privileged:[[:space:]]*true|allowPrivilegeEscalation:[[:space:]]*true' k8s; then
             echo "Privileged Kubernetes configuration is prohibited." >&2
             exit 1
@@ -89,7 +104,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.32.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0, verified release commit
         with:
           scan-type: fs
           scan-ref: .
