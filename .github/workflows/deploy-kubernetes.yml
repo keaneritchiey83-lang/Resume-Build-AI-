@@ -42,12 +42,12 @@ jobs:
           mv /tmp/k8s/overlays/eks /tmp/k8s/overlays/eks-deploy
           sed -i "s|REPLACE_ECR_API_IMAGE|${{ vars.AWS_ECR_API_IMAGE }}|g" /tmp/k8s/overlays/eks-deploy/kustomization.yaml
           sed -i "s|REPLACE_ECR_WEB_IMAGE|${{ vars.AWS_ECR_WEB_IMAGE }}|g" /tmp/k8s/overlays/eks-deploy/kustomization.yaml
-          sed -i "s|newTag: phase10|newTag: ${{ inputs.image_tag }}|g" /tmp/k8s/overlays/eks-deploy/kustomization.yaml
+          sed -i "s|newTag: phase14|newTag: ${{ inputs.image_tag }}|g" /tmp/k8s/overlays/eks-deploy/kustomization.yaml
           kubectl apply -f /tmp/k8s/base/namespace.yaml
           kubectl apply -f /tmp/k8s/base/configmap.yaml
           kubectl apply -f /tmp/k8s/base/serviceaccounts.yaml
           kubectl -n career-ai get secret career-runtime
-          sed -i "s|career-api:phase10|${{ vars.AWS_ECR_API_IMAGE }}:${{ inputs.image_tag }}|g" /tmp/k8s/jobs/migrate.yaml
+          sed -i "s|career-api:phase14|${{ vars.AWS_ECR_API_IMAGE }}:${{ inputs.image_tag }}|g" /tmp/k8s/jobs/migrate.yaml
           kubectl -n career-ai delete job career-migrate --ignore-not-found=true
           kubectl apply -f /tmp/k8s/jobs/migrate.yaml
           kubectl -n career-ai wait --for=condition=complete job/career-migrate --timeout=10m
@@ -73,7 +73,7 @@ jobs:
           cp -R k8s /tmp/k8s
           mv /tmp/k8s/overlays/aks /tmp/k8s/overlays/aks-deploy
           sed -i "s|REPLACE_ACR|${{ vars.AZURE_ACR_NAME }}|g" /tmp/k8s/overlays/aks-deploy/kustomization.yaml
-          sed -i "s|newTag: phase10|newTag: ${{ inputs.image_tag }}|g" /tmp/k8s/overlays/aks-deploy/kustomization.yaml
+          sed -i "s|newTag: phase14|newTag: ${{ inputs.image_tag }}|g" /tmp/k8s/overlays/aks-deploy/kustomization.yaml
           sed -i "s|REPLACE_MANAGED_IDENTITY_CLIENT_ID|${{ vars.AZURE_WORKLOAD_IDENTITY_CLIENT_ID }}|g" /tmp/k8s/overlays/aks-deploy/sa-api-patch.yaml
           sed -i "s|REPLACE_MANAGED_IDENTITY_CLIENT_ID|${{ vars.AZURE_WORKLOAD_IDENTITY_CLIENT_ID }}|g" /tmp/k8s/overlays/aks-deploy/sa-worker-patch.yaml
           sed -i "s|REPLACE_MANAGED_IDENTITY_CLIENT_ID|${{ vars.AZURE_WORKLOAD_IDENTITY_CLIENT_ID }}|g" /tmp/k8s/overlays/aks-deploy/sa-beat-patch.yaml
@@ -81,7 +81,7 @@ jobs:
           kubectl apply -f /tmp/k8s/base/configmap.yaml
           kubectl apply -f /tmp/k8s/base/serviceaccounts.yaml
           kubectl -n career-ai get secret career-runtime
-          sed -i "s|career-api:phase10|${{ vars.AZURE_ACR_NAME }}.azurecr.io/global-career-api:${{ inputs.image_tag }}|g" /tmp/k8s/jobs/migrate.yaml
+          sed -i "s|career-api:phase14|${{ vars.AZURE_ACR_NAME }}.azurecr.io/global-career-api:${{ inputs.image_tag }}|g" /tmp/k8s/jobs/migrate.yaml
           kubectl -n career-ai delete job career-migrate --ignore-not-found=true
           kubectl apply -f /tmp/k8s/jobs/migrate.yaml
           kubectl -n career-ai wait --for=condition=complete job/career-migrate --timeout=10m
