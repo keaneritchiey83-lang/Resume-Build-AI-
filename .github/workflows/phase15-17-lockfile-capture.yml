@@ -31,6 +31,7 @@ jobs:
           node <<'NODE'
           const fs = require('node:fs');
           const crypto = require('node:crypto');
+          const { isDeepStrictEqual } = require('node:util');
           const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
           const bytes = fs.readFileSync('package-lock.json');
           const lock = JSON.parse(bytes);
@@ -38,8 +39,8 @@ jobs:
               lock.version !== p.version || !lock.packages?.['']) {
             throw new Error('Invalid package lock metadata');
           }
-          if (JSON.stringify(lock.packages[''].dependencies) !== JSON.stringify(p.dependencies) ||
-              JSON.stringify(lock.packages[''].devDependencies) !== JSON.stringify(p.devDependencies)) {
+          if (!isDeepStrictEqual(lock.packages[''].dependencies, p.dependencies) ||
+              !isDeepStrictEqual(lock.packages[''].devDependencies, p.devDependencies)) {
             throw new Error('package.json and package-lock.json disagree');
           }
           const hash = crypto.createHash('sha256').update(bytes).digest('hex');
