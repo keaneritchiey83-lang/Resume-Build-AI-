@@ -41,6 +41,11 @@ resource "azurerm_kubernetes_cluster" "main" {
   automatic_upgrade_channel = "stable"
   node_os_upgrade_channel   = "NodeImage"
 
+  # AzureRM 5.x requires explicit node provisioning; retain managed node pools.
+  node_provisioning_profile {
+    mode = "Manual"
+  }
+
   default_node_pool {
     name                         = "system"
     vm_size                      = var.node_vm_size
