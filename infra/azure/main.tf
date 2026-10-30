@@ -56,7 +56,7 @@ resource "azurerm_key_vault" "main" {
   sku_name                   = "premium"
   purge_protection_enabled   = true
   soft_delete_retention_days = 30
-  enable_rbac_authorization  = true
+  rbac_authorization_enabled = true
 }
 
 resource "azurerm_role_assignment" "deployer_key_crypto" {
@@ -152,9 +152,8 @@ resource "azurerm_private_dns_zone" "postgres" {
 
 resource "azurerm_private_dns_zone_virtual_network_link" "postgres" {
   name                  = "${local.name}-postgres-link"
-  private_dns_zone_name = azurerm_private_dns_zone.postgres.name
+  private_dns_zone_id = azurerm_private_dns_zone.postgres.id
   virtual_network_id    = azurerm_virtual_network.main.id
-  resource_group_name   = azurerm_resource_group.main.name
 }
 
 resource "azurerm_postgresql_flexible_server" "main" {
@@ -214,9 +213,8 @@ resource "azurerm_private_dns_zone" "redis" {
 
 resource "azurerm_private_dns_zone_virtual_network_link" "redis" {
   name                  = "${local.name}-redis-link"
-  private_dns_zone_name = azurerm_private_dns_zone.redis.name
+  private_dns_zone_id = azurerm_private_dns_zone.redis.id
   virtual_network_id    = azurerm_virtual_network.main.id
-  resource_group_name   = azurerm_resource_group.main.name
 }
 
 resource "azurerm_private_endpoint" "redis" {
