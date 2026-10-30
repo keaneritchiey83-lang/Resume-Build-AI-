@@ -151,9 +151,9 @@ resource "azurerm_private_dns_zone" "postgres" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "postgres" {
-  name                  = "${local.name}-postgres-link"
+  name                = "${local.name}-postgres-link"
   private_dns_zone_id = azurerm_private_dns_zone.postgres.id
-  virtual_network_id    = azurerm_virtual_network.main.id
+  virtual_network_id  = azurerm_virtual_network.main.id
 }
 
 resource "azurerm_postgresql_flexible_server" "main" {
@@ -212,9 +212,9 @@ resource "azurerm_private_dns_zone" "redis" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "redis" {
-  name                  = "${local.name}-redis-link"
+  name                = "${local.name}-redis-link"
   private_dns_zone_id = azurerm_private_dns_zone.redis.id
-  virtual_network_id    = azurerm_virtual_network.main.id
+  virtual_network_id  = azurerm_virtual_network.main.id
 }
 
 resource "azurerm_private_endpoint" "redis" {
