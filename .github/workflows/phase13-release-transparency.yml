@@ -7,11 +7,6 @@ on:
         description: "Immutable OCI image reference including @sha256:digest"
         required: true
         type: string
-      environment:
-        description: "GitHub environment requiring release approval"
-        required: true
-        default: production
-        type: string
 
 permissions:
   contents: read
@@ -22,7 +17,9 @@ permissions:
 jobs:
   sign-and-log:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    # Must be configured with independent required reviewers in repository settings.
+    # Never let a caller select an arbitrary unprotected environment.
+    environment: production-signing
     steps:
       - uses: actions/checkout@v4
 
@@ -30,14 +27,20 @@ jobs:
         env:
           IMAGE_REF: ${{ inputs.image_ref }}
         run: |
-          case "$IMAGE_REF" in
-            *@sha256:*) ;;
-            *)
-              echo "image_ref must be immutable and include @sha256:digest" >&2
-              exit 1
-              ;;
-          esac
+          if [[ ! "$IMAGE_REF" =~ ^[a-zA-Z0-9._:/-]+@sha256:[a-f0-9]{64}$ ]]; then
+            echo "image_ref must include a complete SHA-256 digest" >&2
+            exit 1
+          fi
 
+      - name: Require security approval reference bound to checked-out source
+        shell: bash
+        env:
+          APPROVED_SHA: ${{ vars.GCAI_RELEASE_APPROVED_SHA }}
+          SECURITY_APPROVAL_ID: ${{ vars.GCAI_SECURITY_APPROVAL_ID }}
+        run: |
+          set -euo pipefail
+          [[ "$APPROVED_SHA" =~ ^[a-f0-9]{40}$ && "$APPROVED_SHA" == "$GITHUB_SHA" ]] || { echo "Approved source SHA missing or mismatched" >&2; exit 1; }
+          [[ -n "$SECURITY_APPROVAL_ID" ]] || { echo "Independent security approval reference required" >&2; exit 1; }
       - name: Install Cosign
         uses: sigstore/cosign-installer@v4.1.2
 
