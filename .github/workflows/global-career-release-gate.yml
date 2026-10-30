@@ -21,6 +21,7 @@ jobs:
           required=(
             backend/pyproject.toml
             frontend/package.json
+            frontend/package-lock.json
             ops/phase15_17/run_release_checks.py
             .github/workflows/ci.yml
             .github/workflows/phase14-live-validation.yml
