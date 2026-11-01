@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: career-ai
+resources:
+  - ../../base
+patches:
+  - path: config-patch.yaml
+  - path: sa-api-patch.yaml
+  - path: sa-worker-patch.yaml
+  - path: api-identity-patch.yaml
+  - path: worker-identity-patch.yaml
+  - path: sa-beat-patch.yaml
+  - path: beat-identity-patch.yaml
+  - path: ingress-patch.yaml
+images:
+  - name: career-api
+    newName: REPLACE_ACR.azurecr.io/global-career-api
+    newTag: phase14
+  - name: career-web
+    newName: REPLACE_ACR.azurecr.io/global-career-web
+    newTag: phase14

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phase13-spiffe-federation-example
+  namespace: career-ai
+data:
+  README: |
+    Example only. Configure federation relationships in SPIRE Server through its
+    supported configuration/registration mechanisms. Do not copy trust bundles
+    from unverified network locations into production.
+
+    Each peer relationship should pin:
+      - the peer trust-domain name
+      - the bundle endpoint URL/profile
+      - the bootstrap trust material or independently verified Web PKI endpoint
+      - the expected region/organization relationship
+
+    Rotate peer bundles before new signing keys begin issuing SVIDs.
+  primary-to-secondary.json: |
+    {
+      "trust_domain": "secondary.career.internal",
+      "bundle_endpoint_url": "https://spiffe-bundle.secondary.example/bundle",
+      "bundle_endpoint_profile": "https_web",
+      "status": "operator-review-required"
+    }

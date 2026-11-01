@@ -1,0 +1,28 @@
+{
+  "system_key": "career-resume-assistant",
+  "version": "1.0.0",
+  "name": "Career r\u00e9sum\u00e9 and job-fit assistant",
+  "owner": "AI Governance",
+  "intended_purpose": "Assist candidates with career preparation and provide human-reviewed job-fit support.",
+  "operator_role": "both",
+  "lifecycle_status": "validation",
+  "jurisdictions": [
+    "US",
+    "EU"
+  ],
+  "model_names": [
+    "gpt-5.6"
+  ],
+  "data_categories": [
+    "candidate_profile",
+    "resume",
+    "job_description",
+    "career_taxonomies"
+  ],
+  "employment_use": true,
+  "education_use": false,
+  "profiles_natural_persons": true,
+  "materially_influences_decisions": false,
+  "human_oversight": true,
+  "iso42001_in_scope": true
+}

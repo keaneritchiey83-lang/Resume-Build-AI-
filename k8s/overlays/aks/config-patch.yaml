@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: career-config
+data:
+  KEY_PROVIDER: "azure_key_vault"
+  AZURE_KEY_VAULT_URL: "https://REPLACE_ME.vault.azure.net/"
+  AZURE_KEY_NAME: "career-envelope"
+  DEPLOYMENT_ENVIRONMENT: "production-azure"
+  PHASE13_REGION_ID: "azure-secondary"
+  PHASE13_REGION_NAME: "Azure Secondary"
+  PHASE13_REGION_CLOUD: "azure"

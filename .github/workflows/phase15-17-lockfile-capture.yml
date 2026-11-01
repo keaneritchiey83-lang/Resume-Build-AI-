@@ -1,0 +1,61 @@
+name: Phase 15–17 frontend lockfile capture
+on:
+  push:
+    branches:
+      - release/phase15-17-ci-readiness-20261029
+    paths:
+      - .github/workflows/phase15-17-lockfile-capture.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Generate, verify, build and publish dependency lock evidence
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm ci --no-audit --no-fund
+          npm run build
+          npm run test:build
+          node <<'NODE'
+          const fs = require('node:fs');
+          const crypto = require('node:crypto');
+          const { isDeepStrictEqual } = require('node:util');
+          const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const bytes = fs.readFileSync('package-lock.json');
+          const lock = JSON.parse(bytes);
+          if (lock.lockfileVersion < 3 || lock.name !== p.name ||
+              lock.version !== p.version || !lock.packages?.['']) {
+            throw new Error('Invalid package lock metadata');
+          }
+          if (!isDeepStrictEqual(lock.packages[''].dependencies, p.dependencies) ||
+              !isDeepStrictEqual(lock.packages[''].devDependencies, p.devDependencies)) {
+            throw new Error('package.json and package-lock.json disagree');
+          }
+          const hash = crypto.createHash('sha256').update(bytes).digest('hex');
+          const b64 = bytes.toString('base64');
+          console.log('GCAI_LOCK_BEGIN ' + hash + ' ' + bytes.length);
+          for (let i = 0; i < b64.length; i += 4096) {
+            console.log('GCAI_LOCK_CHUNK ' + b64.slice(i, i+4096));
+          }
+          console.log('GCAI_LOCK_END');
+          NODE
+      - name: Upload lockfile for human review
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase15-17-reviewed-lockfile-${{ github.sha }}
+          path: frontend/package-lock.json
+          retention-days: 7
+          if-no-files-found: error
+# Build evidence only. This job does not deploy or grant production approval.

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: career-api
+  namespace: career-ai
+spec:
+  template:
+    spec:
+      containers:
+        - name: api
+          env:
+            - name: PHASE14_REGION_ID
+              value: region-b
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3

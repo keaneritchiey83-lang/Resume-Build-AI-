@@ -1,0 +1,30 @@
+groups:
+  - name: global-career-ai-phase14
+    interval: 30s
+    rules:
+      - record: career_ai:http_availability:rate5m
+        expr: |
+          sum(rate(career_phase14_http_requests_total{route!="/health",route!="/ready",route!="/metrics",status!~"5.."}[5m]))
+          /
+          clamp_min(sum(rate(career_phase14_http_requests_total{route!="/health",route!="/ready",route!="/metrics"}[5m])), 0.000001)
+      - record: career_ai:http_latency_p95_seconds:rate5m
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(career_phase14_http_duration_seconds_bucket{route!="/health",route!="/ready",route!="/metrics"}[5m])))
+      - alert: CareerAIFastErrorBudgetBurn
+        expr: |
+          (1 - career_ai:http_availability:rate5m) > (14.4 * 0.001)
+          and
+          sum(rate(career_phase14_http_requests_total{route!="/health",route!="/ready",route!="/metrics"}[5m])) > 0
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "Phase 14 error-budget burn exceeds 14.4x"
+      - alert: CareerAIHighP95Latency
+        expr: career_ai:http_latency_p95_seconds:rate5m > 1
+        for: 10m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "Career AI p95 latency above 1s"

@@ -1,0 +1,52 @@
+{
+  "framework": "SOC2-evidence-mapping",
+  "note": "Engineering evidence map only; not AICPA Trust Services Criteria text and not an audit opinion.",
+  "controls": [
+    {
+      "id": "CC6-access",
+      "objective": "Logical access controls and MFA evidence",
+      "sources": [
+        "users",
+        "memberships",
+        "identity configuration"
+      ]
+    },
+    {
+      "id": "CC7-monitoring",
+      "objective": "Operational/security monitoring evidence",
+      "sources": [
+        "OpenTelemetry",
+        "security audit events",
+        "SIEM configuration"
+      ]
+    },
+    {
+      "id": "CC8-change",
+      "objective": "Change-management evidence",
+      "sources": [
+        "Alembic migrations",
+        "CI checks",
+        "immutable image release workflow"
+      ]
+    },
+    {
+      "id": "availability-dr",
+      "objective": "Backup/restore and disaster recovery evidence",
+      "sources": [
+        "ops/dr",
+        "cloud backup configuration",
+        "restore drill records"
+      ]
+    },
+    {
+      "id": "ai-governance",
+      "objective": "AI policy/evaluation/human review evidence",
+      "sources": [
+        "governance_policies",
+        "model_eval_runs",
+        "fairness_snapshots",
+        "human_review_items"
+      ]
+    }
+  ]
+}

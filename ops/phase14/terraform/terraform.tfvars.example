@@ -1,0 +1,9 @@
+management_region = "us-east-1"
+hosted_zone_id = "REPLACE_WITH_HOSTED_ZONE_ID"
+public_fqdn = "app.example.com"
+region_a_host = "api-a.example.com"
+region_b_host = "api-b.example.com"
+aws_region_a = "us-east-1"
+aws_region_b = "eu-central-1"
+monthly_budget_usd = "9000"
+budget_alert_emails = ["REPLACE_WITH_APPROVED_ADDRESS@example.com"]

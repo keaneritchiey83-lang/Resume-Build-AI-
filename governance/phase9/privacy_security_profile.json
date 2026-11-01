@@ -1,0 +1,44 @@
+{
+  "phase": "9B",
+  "purpose": "Operational privacy-rights, lineage, retention and continuous governance controls.",
+  "dsar": {
+    "default_due_days": 30,
+    "rights": [
+      "access",
+      "portability",
+      "rectification",
+      "erasure",
+      "restriction",
+      "objection"
+    ],
+    "identity_verification_required_for": [
+      "access",
+      "portability",
+      "erasure"
+    ],
+    "note": "Jurisdiction-specific exceptions and extensions require privacy/legal review."
+  },
+  "retention": {
+    "legal_hold_blocks_deletion": true,
+    "allowlisted_record_types_only": true,
+    "automatic_jobs_are_auditable": true
+  },
+  "lineage": {
+    "metadata_only": true,
+    "raw_personal_data_in_lineage_graph": false
+  },
+  "red_teaming": {
+    "automated_policy_cases": [
+      "protected_trait_ranking",
+      "credential_fabrication",
+      "autonomous_apply"
+    ],
+    "manual_required": [
+      "prompt_injection",
+      "data_exfiltration",
+      "cross_tenant_access",
+      "unsupported_metrics"
+    ],
+    "rule": "Manual scenarios are never auto-passed."
+  }
+}

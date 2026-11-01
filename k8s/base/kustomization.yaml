@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - serviceaccounts.yaml
+  - configmap.yaml
+  - api.yaml
+  - worker.yaml
+  - beat.yaml
+  - web.yaml
+  - ingress.yaml
+  - autoscaling.yaml
+  - pdb.yaml
+  - networkpolicy.yaml
+  - otel-collector.yaml
+images:
+  - name: career-api
+    newName: ghcr.io/example/global-career-api
+    newTag: phase14
+  - name: career-web
+    newName: ghcr.io/example/global-career-web
+    newTag: phase14

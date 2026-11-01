@@ -1,0 +1,36 @@
+{
+  "controls": [
+    {
+      "id": "P9-01",
+      "name": "DSAR deadlines",
+      "severity": "high",
+      "source": "data_subject_requests"
+    },
+    {
+      "id": "P9-02",
+      "name": "Privacy review freshness",
+      "severity": "medium",
+      "source": "privacy_impact_assessments"
+    },
+    {
+      "id": "P9-03",
+      "name": "AI red-team status",
+      "severity": "high",
+      "source": "red_team_campaigns"
+    },
+    {
+      "id": "P9-04",
+      "name": "AI incident backlog",
+      "severity": "medium",
+      "source": "ai_incidents"
+    },
+    {
+      "id": "P9-05",
+      "name": "High-risk AI review",
+      "severity": "high",
+      "source": "ai_system_inventory"
+    }
+  ],
+  "output": "continuous_control_snapshots",
+  "warning": "Control snapshots are operational signals, not certifications or legal conclusions."
+}

@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: career-beat
+  namespace: career-ai
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: career-beat
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: career-beat
+        app.kubernetes.io/part-of: global-career-ai
+    spec:
+      serviceAccountName: career-beat
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: beat
+          image: career-api:phase14
+          imagePullPolicy: IfNotPresent
+          command: ["celery"]
+          args:
+            - "-A"
+            - "app.celery_app.celery"
+            - "beat"
+            - "--loglevel=INFO"
+            - "--schedule=/tmp/celerybeat-schedule"
+          envFrom:
+            - configMapRef:
+                name: career-config
+            - secretRef:
+                name: career-runtime
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: spire-sockets
+              mountPath: /run/spire/sockets
+              readOnly: true
+      volumes:
+        - name: spire-sockets
+          hostPath:
+            path: /run/spire/sockets
+            type: Directory
+        - name: tmp
+          emptyDir:
+            sizeLimit: 128Mi

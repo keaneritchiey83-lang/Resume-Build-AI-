@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "standards": {
+    "openid_federation": "1.1",
+    "spiffe_federation": "stable",
+    "slsa": "1.2"
+  },
+  "controls": [
+    {
+      "id": "TRUST-13-01",
+      "name": "Explicit regional trust registration",
+      "requirement": "Every deployment region has an organization-scoped trust-domain record."
+    },
+    {
+      "id": "TRUST-13-02",
+      "name": "Pinned peer bundles",
+      "requirement": "Peer SPIFFE bundles are public-only and SHA-256 digest pinned before activation."
+    },
+    {
+      "id": "TRUST-13-03",
+      "name": "Trust continuity snapshots",
+      "requirement": "Active anchors, workload policies and HSM public metadata are captured into sealed snapshots."
+    },
+    {
+      "id": "TRUST-13-04",
+      "name": "Human-governed restore",
+      "requirement": "Disaster-recovery trust restore requires integrity verification and explicit operator approval."
+    },
+    {
+      "id": "TRUST-13-05",
+      "name": "Transparency chain",
+      "requirement": "Release and trust-continuity events are appended to an organization-scoped hash chain."
+    }
+  ]
+}

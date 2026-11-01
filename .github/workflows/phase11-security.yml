@@ -1,0 +1,39 @@
+name: Phase 11 Continuous Security
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  dependency-and-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install backend
+        run: |
+          cd backend
+          pip install -e ".[dev]"
+          pip install pip-audit bandit
+      - name: Dependency audit
+        run: pip-audit
+      - name: Python security scan
+        run: bandit -r backend/app -x backend/tests
+
+  dast-baseline:
+    if: ${{ vars.PENTEST_TARGET_URL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: ZAP baseline against approved test target
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: ${{ vars.PENTEST_TARGET_URL }}
+          fail_action: true
+          allow_issue_writing: false

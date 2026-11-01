@@ -1,0 +1,41 @@
+name: Global Career AI release source gate
+on:
+  push:
+    branches:
+      - release/phase15-17-ci-readiness-20261029
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Phase 15-17 application source is present
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            backend/pyproject.toml
+            frontend/package.json
+            frontend/package-lock.json
+            ops/phase15_17/run_release_checks.py
+            .github/workflows/ci.yml
+            .github/workflows/phase14-live-validation.yml
+          )
+          missing=0
+          for f in "${required[@]}"; do
+            if [[ ! -f "$f" ]]; then
+              echo "::error file=$f::Missing required application source: $f"
+              missing=1
+            fi
+          done
+          if ((missing)); then
+            echo "BLOCKED: complete Phase 15-17 source has not been committed."
+            exit 1
+          fi
+          python ops/phase15_17/run_release_checks.py --light
+          echo "Local preflight completed. Production authorization requires independent gates."

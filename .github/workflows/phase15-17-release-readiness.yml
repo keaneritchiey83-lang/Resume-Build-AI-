@@ -1,0 +1,34 @@
+name: Phase 15-17 non-disruptive release preflight
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run non-disruptive release preflight and record blocked gates
+        id: release
+        run: python ops/phase15_17/run_release_checks.py --light
+      - name: Publish preflight evidence even when a test fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase15-17-local-preflight-${{ github.run_id }}
+          path: reports/phase15-17-local-release-evidence.json
+          if-no-files-found: error
+          retention-days: 30
+
+# This workflow DOES NOT install the full backend or frontend dependencies and
+# DOES NOT certify release readiness. ci.yml and phase14-live-validation.yml
+# verify their respective workloads on connected CI runners. A protected,
+# manually approved staging failover drill is separate and never auto-triggered.

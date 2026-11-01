@@ -1,0 +1,82 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      JWT_SECRET: test-secret-test-secret-test-secret-123456
+      OIDC_SESSION_SECRET: test-session-test-session-test-session-123456
+      LOCAL_MASTER_KEYS_JSON: '{"local-v1":"MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA="}'
+      LOCAL_CURRENT_KEY_ID: local-v1
+      KEY_PROVIDER: local
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: python -m compileall app tests alembic scripts
+      - run: pytest -q
+      - run: python scripts/run_phase7_governance_gate.py
+      - run: python scripts/run_phase8_governance_gate.py
+      - run: python scripts/run_phase9_governance_gate.py
+      - run: python scripts/run_phase10_governance_gate.py
+      - run: python scripts/run_phase11_governance_gate.py
+      - run: python scripts/run_phase12_governance_gate.py
+      - run: python scripts/run_phase13_governance_gate.py
+      - run: python scripts/run_phase14_governance_gate.py
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - run: npm run test:build
+
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - run: terraform fmt -check -recursive infra
+      - run: terraform -chdir=infra/aws init -backend=false
+      - run: terraform -chdir=infra/aws validate
+      - run: terraform -chdir=infra/azure init -backend=false
+      - run: terraform -chdir=infra/azure validate
+      - run: terraform -chdir=infra/eks init -backend=false
+      - run: terraform -chdir=infra/eks validate
+      - run: terraform -chdir=infra/aks init -backend=false
+      - run: terraform -chdir=infra/aks validate
+
+  kubernetes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+      - run: kubectl kustomize k8s/base > /tmp/career-base.yaml
+      - run: test -s /tmp/career-base.yaml
+      - run: |
+          if grep -R --line-number -E 'privileged:[[:space:]]*true|allowPrivilegeEscalation:[[:space:]]*true' k8s; then
+            echo "Privileged Kubernetes configuration is prohibited." >&2
+            exit 1
+          fi

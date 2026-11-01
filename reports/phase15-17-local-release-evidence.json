@@ -1,0 +1,147 @@
+{
+  "project": "Global Career Architecture AI",
+  "phase": "15-17 B-track",
+  "generated_at_utc": "2026-10-29T20:25:23.831341+00:00",
+  "scope": "LOCAL preflight; not a completed CI pipeline or production certification",
+  "gates": [
+    {
+      "gate": "Python source compilation",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "compileall",
+        "-q",
+        "backend/app",
+        "backend/phase14",
+        "backend/alembic",
+        "backend/tests",
+        "ops",
+        "scripts"
+      ],
+      "output_tail": ""
+    },
+    {
+      "gate": "Phase 14/15-17 deployment regression tests",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "ops/phase14/validation",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "output_tail": ".LocalLauncherTests.test_missing_docker_emits_install_guidance) ... ok\ntest_career_studio_exposes_all_phases_without_mutating_failover (test_phase15_17_release.Phase1517DeploymentTests.test_career_studio_exposes_all_phases_without_mutating_failover) ... ok\ntest_ci_db_password_is_generated_and_consistent (test_phase15_17_release.Phase1517DeploymentTests.test_ci_db_password_is_generated_and_consistent) ... ok\ntest_ci_live_smoke_requires_explicit_approval_and_proxy (test_phase15_17_release.Phase1517DeploymentTests.test_ci_live_smoke_requires_explicit_approval_and_proxy) ... ok\ntest_compose_uses_configured_database_secret (test_phase15_17_release.Phase1517DeploymentTests.test_compose_uses_configured_database_secret) ... ok\ntest_compose_build_uses_same_origin (test_production_routing.ProductionRoutingTests.test_compose_build_uses_same_origin) ... ok\ntest_nginx_proxy_and_health (test_production_routing.ProductionRoutingTests.test_nginx_proxy_and_health) ... ok\ntest_same_origin_default (test_production_routing.ProductionRoutingTests.test_same_origin_default) ... ok\ntest_release_workflow_is_non_disruptive (test_release_readiness.ReleaseSecurityTests.test_release_workflow_is_non_disruptive) ... ok\ntest_static_control_review (test_release_readiness.ReleaseSecurityTests.test_static_control_review) ... ok\ntest_phase13_and_14_accept_newer_matching_version (test_release_readiness.VersionGateTests.test_phase13_and_14_accept_newer_matching_version) ... ok\ntest_phase14_rejects_old_version (test_release_readiness.VersionGateTests.test_phase14_rejects_old_version) ... ok\ntest_rejects_mismatched_package_version (test_release_readiness.VersionGateTests.test_rejects_mismatched_package_version) ... ok\ntest_ci_creates_private_secrets_and_refuses_overwrite (test_validation.EnvironmentPreparationTests.test_ci_creates_private_secrets_and_refuses_overwrite) ... ok\ntest_database_verifier_checks_migration_vector_and_tables (test_validation.StackValidatorTests.test_database_verifier_checks_migration_vector_and_tables) ... ok\ntest_healthy_stack_is_accepted (test_validation.StackValidatorTests.test_healthy_stack_is_accepted) ... ok\ntest_readiness_fails_when_agent_execution_is_enabled (test_validation.StackValidatorTests.test_readiness_fails_when_agent_execution_is_enabled) ... ok\ntest_wrong_migration_fails_closed (test_validation.StackValidatorTests.test_wrong_migration_fails_closed) ... ok\n\n----------------------------------------------------------------------\nRan 22 tests in 2.201s\n\nOK\n"
+    },
+    {
+      "gate": "Phase 15-17 targeted backend tests",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_phase15_17.py",
+        "tests/test_phase15_17_b.py",
+        "tests/test_phase14.py",
+        "tests/test_phase13.py"
+      ],
+      "output_tail": "............................                                             [100%]\n28 passed in 0.64s\n"
+    },
+    {
+      "gate": "Phase 13 governance gate",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "scripts/run_phase13_governance_gate.py"
+      ],
+      "output_tail": "Phase 13 governance gate PASS (16 checks)\n"
+    },
+    {
+      "gate": "Phase 14 governance gate",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "scripts/run_phase14_governance_gate.py"
+      ],
+      "output_tail": "+ /opt/pyvenv/bin/python -m compileall -q app phase14 alembic scripts tests\n+ /opt/pyvenv/bin/python -m pytest -q tests/test_phase14.py tests/test_phase14_integration_contract.py\n.................                                                        [100%]\n17 passed in 0.67s\n+ /opt/pyvenv/bin/python scripts/run_phase13_governance_gate.py\nPhase 13 governance gate PASS (16 checks)\nPhase 14 governance gate PASS\n"
+    },
+    {
+      "gate": "Static deployment-security controls",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "ops/phase15_17/security_review.py"
+      ],
+      "output_tail": "PASS .gitignore: private .env files excluded\nPASS docker-compose.yml: PostgreSQL password required from environment\nPASS docker-compose.yml: local 8000:8000 bound to loopback\nPASS docker-compose.yml: local 5173:8080 bound to loopback\nPASS docker-compose.yml: local 8088:8080 bound to loopback\nPASS create_ci_env.py: ephemeral secrets, agents disabled\nPASS frontend/nginx.conf: same-origin API proxy\nPASS phase14-live-validation.yml: isolated CI accounts explicitly acknowledged\nPASS phase14-staging-failover.yml: manual dispatch with explicit impact confirmation\nPASS phase14-staging-failover.yml: no automatic push-triggered staging drill\nStatic configuration review PASS; external security approval still required.\n"
+    },
+    {
+      "gate": "Controlled failover dry-run (zero cluster changes)",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "ops/phase14/failover/failover_drill.py",
+        "--kube-context",
+        "staging",
+        "--namespace",
+        "career-ai-staging",
+        "--global-url",
+        "https://global.invalid",
+        "--failed-region-url",
+        "https://failed.invalid",
+        "--survivor-url",
+        "https://survivor.invalid",
+        "--survivor-region",
+        "staging-survivor"
+      ],
+      "output_tail": "{\n  \"mode\": \"DRY_RUN\",\n  \"affected_context\": \"staging\",\n  \"affected_namespace\": \"career-ai-staging\",\n  \"service\": \"career-api\",\n  \"survivor_region\": \"staging-survivor\",\n  \"global_url\": \"https://global.invalid\",\n  \"timeout_seconds\": 180\n}\nNo resources changed. Use --execute --ack-impact for staging drill.\n"
+    },
+    {
+      "gate": "Docker Compose live deployment",
+      "status": "BLOCKED",
+      "reason": "Docker CLI is unavailable on this host"
+    },
+    {
+      "gate": "Frontend production build",
+      "status": "BLOCKED",
+      "reason": "No frontend/node_modules; install dependencies on a connected runner"
+    },
+    {
+      "gate": "Live PostgreSQL migration and authenticated Compose integration",
+      "status": "BLOCKED",
+      "reason": "Requires running disposable PostgreSQL/Docker Compose infrastructure"
+    },
+    {
+      "gate": "GitHub Actions hosted pipeline",
+      "status": "BLOCKED",
+      "reason": "Must run on a repository containing this project; local execution is not a hosted CI run"
+    },
+    {
+      "gate": "Approved staging regional failover",
+      "status": "BLOCKED",
+      "reason": "Requires a protected GitHub staging environment and authorized regional infrastructure"
+    },
+    {
+      "gate": "Independent manual security approval",
+      "status": "BLOCKED",
+      "reason": "Static configuration review is not a full security review"
+    }
+  ],
+  "counts": {
+    "PASS": 7,
+    "FAIL": 0,
+    "BLOCKED": 6
+  },
+  "production_ready": false
+}

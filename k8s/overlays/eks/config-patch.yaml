@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: career-config
+data:
+  KEY_PROVIDER: "aws_kms"
+  AWS_REGION: "us-east-1"
+  DEPLOYMENT_ENVIRONMENT: "production-aws"
+  PHASE13_REGION_ID: "aws-primary"
+  PHASE13_REGION_NAME: "AWS Primary"
+  PHASE13_REGION_CLOUD: "aws"

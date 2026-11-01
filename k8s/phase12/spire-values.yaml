@@ -1,0 +1,21 @@
+# Example values for the official SPIRE Helm charts.
+# Validate these values against the chart version you pin before production.
+global:
+  spire:
+    trustDomain: career.internal
+
+spire-server:
+  replicaCount: 3
+  controllerManager:
+    enabled: true
+  persistence:
+    enabled: true
+
+spire-agent:
+  socketPath: /run/spire/sockets/agent.sock
+
+spiffe-csi-driver:
+  enabled: true
+
+# Workloads consume SVIDs from the SPIFFE Workload API socket.
+# Do not copy workload private keys into Kubernetes Secrets.

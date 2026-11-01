@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: career-sensitive-worker
+  namespace: career-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: career-sensitive-worker
+  template:
+    metadata:
+      labels:
+        app: career-sensitive-worker
+    spec:
+      # Deployment-specific: install and attest the runtime before enabling.
+      runtimeClassName: kata-cc
+      nodeSelector:
+        career.ai/confidential-compute: "true"
+      containers:
+        - name: worker
+          image: ghcr.io/example/global-career-api:phase14
+          command: ["celery", "-A", "app.celery_app:celery_app", "worker", "-Q", "sensitive"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"

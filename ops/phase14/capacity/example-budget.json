@@ -1,0 +1,9 @@
+{
+  "monthly_spend_usd_estimate": 7000,
+  "monthly_spend_usd_ceiling": 9000,
+  "peak_global_requests_per_second": 180,
+  "healthy_requests_per_second_per_pod": 30,
+  "maximum_planned_pod_utilization": 0.6,
+  "region_a_max_replicas": 12,
+  "region_b_max_replicas": 12
+}

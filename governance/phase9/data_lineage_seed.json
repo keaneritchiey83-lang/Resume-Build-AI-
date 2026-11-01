@@ -1,0 +1,103 @@
+{
+  "note": "Metadata-only seed. Do not place raw personal data in this file.",
+  "assets": [
+    {
+      "asset_key": "candidate_profile",
+      "name": "Encrypted Candidate Profile",
+      "asset_type": "table",
+      "data_categories": [
+        "identity",
+        "career_profile",
+        "skills"
+      ],
+      "contains_personal_data": true,
+      "contains_sensitive_data": false,
+      "retention_class": "candidate_account"
+    },
+    {
+      "asset_key": "resume_documents",
+      "name": "Encrypted Resume Text",
+      "asset_type": "table",
+      "data_categories": [
+        "resume",
+        "employment_history",
+        "education"
+      ],
+      "contains_personal_data": true,
+      "contains_sensitive_data": false,
+      "retention_class": "candidate_account"
+    },
+    {
+      "asset_key": "verified_credentials",
+      "name": "Verified Credential Store",
+      "asset_type": "table",
+      "data_categories": [
+        "credential_evidence",
+        "skills"
+      ],
+      "contains_personal_data": true,
+      "contains_sensitive_data": false,
+      "retention_class": "candidate_account"
+    },
+    {
+      "asset_key": "career_agent_inputs",
+      "name": "Career Agent Inputs",
+      "asset_type": "model_input",
+      "data_categories": [
+        "career_profile",
+        "job_description"
+      ],
+      "contains_personal_data": true,
+      "contains_sensitive_data": false,
+      "retention_class": "agent_runs"
+    },
+    {
+      "asset_key": "career_agent_outputs",
+      "name": "Encrypted Career Agent Outputs",
+      "asset_type": "model_output",
+      "data_categories": [
+        "career_recommendations"
+      ],
+      "contains_personal_data": true,
+      "contains_sensitive_data": false,
+      "retention_class": "agent_runs"
+    },
+    {
+      "asset_key": "audit_events",
+      "name": "Security and Administrative Audit Events",
+      "asset_type": "log",
+      "data_categories": [
+        "security_metadata"
+      ],
+      "contains_personal_data": false,
+      "contains_sensitive_data": false,
+      "retention_class": "audit"
+    }
+  ],
+  "edges": [
+    {
+      "upstream": "candidate_profile",
+      "downstream": "career_agent_inputs",
+      "purpose": "candidate-authorized career analysis",
+      "transformation": "minimum necessary verified career facts"
+    },
+    {
+      "upstream": "resume_documents",
+      "downstream": "career_agent_inputs",
+      "purpose": "candidate-authorized resume preparation",
+      "transformation": "encrypted text extraction to bounded fact ledger"
+    },
+    {
+      "upstream": "verified_credentials",
+      "downstream": "career_agent_inputs",
+      "purpose": "candidate-authorized verified skill evidence",
+      "transformation": "verification metadata and approved skill evidence"
+    },
+    {
+      "upstream": "career_agent_inputs",
+      "downstream": "career_agent_outputs",
+      "purpose": "career preparation assistance",
+      "transformation": "bounded AI analysis with guardrails"
+    }
+  ]
+}

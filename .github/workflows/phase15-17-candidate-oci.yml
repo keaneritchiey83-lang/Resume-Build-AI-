@@ -1,0 +1,168 @@
+name: Phase 15-17 OCI candidate publication
+on:
+  push:
+    branches:
+      - release/phase15-17-ci-readiness-20261029
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-source-and-hosted-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Require release branch and exact source SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/release/phase15-17-ci-readiness-20261029"
+          [[ "$GITHUB_SHA" =~ ^[a-f0-9]{40}$ ]]
+      - name: Verify all same-commit hosted workflows before candidate publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, sys, time
+          from urllib.request import Request, urlopen
+          from urllib.error import HTTPError, URLError
+          required = (
+              "ci",
+              "Phase 14 frontend, live database and Compose validation",
+              "Phase 15-17 release container image validation",
+              "Phase 12 Federation and Runtime Security",
+              "Phase 13 Trust Continuity and AI Security",
+              "Phase14 agents and operational governance",
+              "Global Career AI release source gate",
+              "Phase 15-17 non-disruptive release preflight",
+          )
+          token = os.environ["GH_TOKEN"]
+          repo = os.environ["REPO"]
+          sha = os.environ["SOURCE_SHA"]
+          deadline = time.monotonic() + 32 * 60
+          while True:
+              url = f"https://api.github.com/repos/{repo}/actions/runs?head_sha={sha}&per_page=100"
+              request = Request(url, headers={
+                  "Authorization": "Bearer " + token,
+                  "Accept": "application/vnd.github+json",
+                  "X-GitHub-Api-Version": "2022-11-28",
+              })
+              try:
+                  with urlopen(request, timeout=20) as response:
+                      runs = json.load(response)["workflow_runs"]
+              except (HTTPError, URLError, TimeoutError) as exc:
+                  print("GitHub run lookup failed:", exc, flush=True)
+                  if time.monotonic() >= deadline:
+                      sys.exit("Timed out waiting for workflow evidence")
+                  time.sleep(20)
+                  continue
+              latest = {}
+              for run in runs:
+                  if run.get("head_sha") != sha or run.get("name") not in required:
+                      continue
+                  key = run["name"]
+                  if key not in latest or (run["id"], run.get("run_attempt", 0)) > (latest[key]["id"], latest[key].get("run_attempt", 0)):
+                      latest[key] = run
+              missing = [name for name in required if name not in latest]
+              pending = [name for name in required if name in latest and latest[name]["status"] != "completed"]
+              failed = [name for name in required if name in latest and latest[name]["status"] == "completed"
+                        and latest[name]["conclusion"] != "success"]
+              print(json.dumps({"sha": sha, "missing": missing, "pending": pending, "failed": failed,
+                                "passed": [n for n in required if n in latest and latest[n]["conclusion"] == "success"]}), flush=True)
+              if failed:
+                  sys.exit("Same-commit CI failure blocks image publication: " + ", ".join(failed))
+              if not missing and not pending:
+                  print("PASS: every required hosted workflow succeeded on identical source commit", flush=True)
+                  break
+              if time.monotonic() >= deadline:
+                  sys.exit("Timed out before all required CI checks completed")
+              time.sleep(20)
+          PY
+
+  build-and-publish-candidate:
+    needs: verify-source-and-hosted-checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            context: backend
+            dockerfile: backend/Dockerfile
+          - name: web
+            context: frontend
+            dockerfile: frontend/Dockerfile.prod
+          - name: runtime-sensor
+            context: runtime-sensor-gateway
+            dockerfile: runtime-sensor-gateway/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Log into GitHub container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and publish source-SHA-tagged candidate
+        id: publish
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/global-career-${{ matrix.name }}:${{ github.sha }}
+          provenance: true
+          sbom: true
+      - name: Validate immutable candidate digest evidence
+        shell: bash
+        env:
+          IMAGE_NAME: ${{ matrix.name }}
+          DIGEST: ${{ steps.publish.outputs.digest }}
+          SOURCE_SHA: ${{ github.sha }}
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          [[ "$DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo "No complete OCI digest" >&2; exit 1; }
+          mkdir -p candidate-evidence
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          image = "ghcr.io/" + os.environ["REPO_OWNER"] + "/global-career-" + os.environ["IMAGE_NAME"]
+          digest = os.environ["DIGEST"]
+          sha = os.environ["SOURCE_SHA"]
+          record = {
+              "scope": "release-candidate-only",
+              "production_approved": False,
+              "image": image,
+              "source_sha": sha,
+              "immutable_ref": image + "@" + digest,
+              "digest": digest
+          }
+          Path("candidate-evidence/digest-" + os.environ["IMAGE_NAME"] + ".json").write_text(
+              json.dumps(record, indent=2) + "\n")
+          print(json.dumps(record))
+          PY
+      - name: Save signed-off source binding and candidate digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-digest-${{ matrix.name }}-${{ github.sha }}
+          path: candidate-evidence/digest-${{ matrix.name }}.json
+          retention-days: 90
+          if-no-files-found: error
+
+# This workflow publishes candidate images only after all same-source hosted CI
+# checks have passed; it does not access deployment clusters, production secrets,
+# or protected staging environments. Signing, independent security review, and
+# rollout remain separately authorized gates.

@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "principles": [
+    "Treat retrieved/job/provider content as untrusted data, never privileged instructions.",
+    "Prompt-injection classification is a heuristic, not the primary security boundary.",
+    "The model gateway exposes no tools.",
+    "Agent actions are evaluated outside the model against explicit permission manifests.",
+    "Production model releases require a passing evaluation and a cryptographic release signature.",
+    "Confidential RAG includes only approved knowledge and records document digests."
+  ],
+  "release_gate": {
+    "evaluation_required": true,
+    "signature_required": true,
+    "transparency_entry_recommended": true,
+    "pinned_model_snapshot_recommended": true
+  },
+  "agent_manifest": {
+    "default": "deny",
+    "destination_allowlist": true,
+    "data_category_allowlist": true,
+    "external_call_budget": true,
+    "human_approval_actions": true
+  }
+}

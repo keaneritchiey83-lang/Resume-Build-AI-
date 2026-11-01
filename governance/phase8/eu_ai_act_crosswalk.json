@@ -1,0 +1,124 @@
+{
+  "title": "EU AI Act implementation crosswalk for Global Career Architecture AI",
+  "version": "2026-09-15",
+  "status": "implementation_aid_not_legal_advice",
+  "regulation": "Regulation (EU) 2024/1689 as amended through 2026-07-27",
+  "high_risk_timeline": {
+    "annex_iii_standalone": "2027-12-02",
+    "annex_i_product_embedded": "2028-08-02",
+    "source": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/eu-ai-act-implementation-timeline"
+  },
+  "employment_basis": {
+    "reference": "Annex III, point 4",
+    "scope_summary": "Recruitment/selection and certain worker-management decision systems are listed high-risk use cases, subject to Article 6 classification rules.",
+    "source": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-3"
+  },
+  "controls": [
+    {
+      "ref": "Article 4",
+      "theme": "AI literacy",
+      "artifact_examples": [
+        "role training",
+        "AI literacy records"
+      ]
+    },
+    {
+      "ref": "Article 6 + Annex III(4)",
+      "theme": "classification",
+      "artifact_examples": [
+        "intended purpose",
+        "classification assessment",
+        "Article 6(3) rationale if invoked"
+      ]
+    },
+    {
+      "ref": "Article 9",
+      "theme": "risk management",
+      "artifact_examples": [
+        "risk register",
+        "treatment plan",
+        "periodic review"
+      ]
+    },
+    {
+      "ref": "Article 10",
+      "theme": "data governance",
+      "artifact_examples": [
+        "provenance",
+        "quality checks",
+        "bias controls"
+      ]
+    },
+    {
+      "ref": "Article 11",
+      "theme": "technical documentation",
+      "artifact_examples": [
+        "system/model inventory",
+        "design documentation",
+        "evaluation results"
+      ]
+    },
+    {
+      "ref": "Article 12",
+      "theme": "record keeping",
+      "artifact_examples": [
+        "audit logs",
+        "trace retention"
+      ]
+    },
+    {
+      "ref": "Article 13",
+      "theme": "transparency",
+      "artifact_examples": [
+        "user notices",
+        "limitations",
+        "instructions for use"
+      ]
+    },
+    {
+      "ref": "Article 14",
+      "theme": "human oversight",
+      "artifact_examples": [
+        "review workflow",
+        "override controls",
+        "assigned reviewers"
+      ]
+    },
+    {
+      "ref": "Article 15",
+      "theme": "accuracy robustness cybersecurity",
+      "artifact_examples": [
+        "evals",
+        "security tests",
+        "resilience evidence"
+      ]
+    },
+    {
+      "ref": "Article 26",
+      "theme": "deployer obligations",
+      "artifact_examples": [
+        "operating procedures",
+        "monitoring",
+        "incident handling"
+      ]
+    },
+    {
+      "ref": "Article 27",
+      "theme": "FRIA applicability",
+      "artifact_examples": [
+        "applicability decision",
+        "FRIA where required"
+      ],
+      "note": "Not universally required for every employment deployer; assess statutory conditions."
+    },
+    {
+      "ref": "Article 49",
+      "theme": "registration applicability",
+      "artifact_examples": [
+        "registration decision",
+        "EU database record where applicable"
+      ]
+    }
+  ],
+  "disclaimer": "This crosswalk is an engineering aid. Actual classification and obligations depend on intended purpose, operator role, deployment facts, jurisdiction, exemptions, and future guidance."
+}

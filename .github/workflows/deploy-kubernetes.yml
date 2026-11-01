@@ -1,0 +1,115 @@
+name: deploy-kubernetes
+
+on:
+  workflow_dispatch:
+    inputs:
+      cloud:
+        description: Private Kubernetes target
+        required: true
+        type: choice
+        options:
+          - eks
+          - aks
+      image_tag:
+        description: Exact lowercase 40-character source commit SHA (registry digest must be checked separately)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  packages: read
+
+concurrency:
+  group: production-${{ inputs.cloud }}
+  cancel-in-progress: false
+
+jobs:
+  eks:
+    if: inputs.cloud == 'eks'
+    runs-on: [self-hosted, linux, production]
+    environment: production-eks
+    env:
+      IMAGE_TAG: ${{ inputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release tag before production actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$IMAGE_TAG" =~ ^[a-f0-9]{40}$ ]] || { echo "A full lowercase source SHA is required" >&2; exit 1; }
+          [[ "$IMAGE_TAG" == "$GITHUB_SHA" ]] || { echo "Image tag must match checked-out source SHA" >&2; exit 1; }
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_EKS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - uses: azure/setup-kubectl@v4
+      - run: aws eks update-kubeconfig --name "${{ vars.AWS_EKS_CLUSTER_NAME }}" --region "${{ vars.AWS_REGION }}"
+      - run: |
+          set -euo pipefail
+          set -euo pipefail
+          cp -R k8s /tmp/k8s
+          mv /tmp/k8s/overlays/eks /tmp/k8s/overlays/eks-deploy
+          sed -i "s|REPLACE_ECR_API_IMAGE|${{ vars.AWS_ECR_API_IMAGE }}|g" /tmp/k8s/overlays/eks-deploy/kustomization.yaml
+          sed -i "s|REPLACE_ECR_WEB_IMAGE|${{ vars.AWS_ECR_WEB_IMAGE }}|g" /tmp/k8s/overlays/eks-deploy/kustomization.yaml
+          grep -q "newTag: phase14" /tmp/k8s/overlays/eks-deploy/kustomization.yaml || { echo "Missing expected EKS image tag placeholder" >&2; exit 1; }
+          sed -i "s|newTag: phase14|newTag: ${IMAGE_TAG}|g" /tmp/k8s/overlays/eks-deploy/kustomization.yaml
+          kubectl apply -f /tmp/k8s/base/namespace.yaml
+          kubectl apply -f /tmp/k8s/base/configmap.yaml
+          kubectl apply -f /tmp/k8s/base/serviceaccounts.yaml
+          kubectl -n career-ai get secret career-runtime
+          grep -q "career-api:phase14" /tmp/k8s/jobs/migrate.yaml || { echo "Missing expected migration image placeholder" >&2; exit 1; }
+          sed -i "s|career-api:phase14|${{ vars.AWS_ECR_API_IMAGE }}:${IMAGE_TAG}|g" /tmp/k8s/jobs/migrate.yaml
+          kubectl -n career-ai delete job career-migrate --ignore-not-found=true
+          kubectl apply -f /tmp/k8s/jobs/migrate.yaml
+          kubectl -n career-ai wait --for=condition=complete job/career-migrate --timeout=10m
+          kubectl apply -k /tmp/k8s/overlays/eks-deploy
+          kubectl -n career-ai rollout status deployment/career-api --timeout=10m
+          kubectl -n career-ai rollout status deployment/career-worker --timeout=10m
+          kubectl -n career-ai rollout status deployment/career-web --timeout=10m
+
+  aks:
+    if: inputs.cloud == 'aks'
+    runs-on: [self-hosted, linux, production]
+    environment: production-aks
+    env:
+      IMAGE_TAG: ${{ inputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release tag before production actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$IMAGE_TAG" =~ ^[a-f0-9]{40}$ ]] || { echo "A full lowercase source SHA is required" >&2; exit 1; }
+          [[ "$IMAGE_TAG" == "$GITHUB_SHA" ]] || { echo "Image tag must match checked-out source SHA" >&2; exit 1; }
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/setup-kubectl@v4
+      - run: az aks get-credentials --resource-group "${{ vars.AZURE_AKS_RESOURCE_GROUP }}" --name "${{ vars.AZURE_AKS_CLUSTER_NAME }}" --overwrite-existing
+      - run: |
+          set -euo pipefail
+          set -euo pipefail
+          cp -R k8s /tmp/k8s
+          mv /tmp/k8s/overlays/aks /tmp/k8s/overlays/aks-deploy
+          sed -i "s|REPLACE_ACR|${{ vars.AZURE_ACR_NAME }}|g" /tmp/k8s/overlays/aks-deploy/kustomization.yaml
+          grep -q "newTag: phase14" /tmp/k8s/overlays/aks-deploy/kustomization.yaml || { echo "Missing expected AKS image tag placeholder" >&2; exit 1; }
+          sed -i "s|newTag: phase14|newTag: ${IMAGE_TAG}|g" /tmp/k8s/overlays/aks-deploy/kustomization.yaml
+          sed -i "s|REPLACE_MANAGED_IDENTITY_CLIENT_ID|${{ vars.AZURE_WORKLOAD_IDENTITY_CLIENT_ID }}|g" /tmp/k8s/overlays/aks-deploy/sa-api-patch.yaml
+          sed -i "s|REPLACE_MANAGED_IDENTITY_CLIENT_ID|${{ vars.AZURE_WORKLOAD_IDENTITY_CLIENT_ID }}|g" /tmp/k8s/overlays/aks-deploy/sa-worker-patch.yaml
+          sed -i "s|REPLACE_MANAGED_IDENTITY_CLIENT_ID|${{ vars.AZURE_WORKLOAD_IDENTITY_CLIENT_ID }}|g" /tmp/k8s/overlays/aks-deploy/sa-beat-patch.yaml
+          kubectl apply -f /tmp/k8s/base/namespace.yaml
+          kubectl apply -f /tmp/k8s/base/configmap.yaml
+          kubectl apply -f /tmp/k8s/base/serviceaccounts.yaml
+          kubectl -n career-ai get secret career-runtime
+          grep -q "career-api:phase14" /tmp/k8s/jobs/migrate.yaml || { echo "Missing expected migration image placeholder" >&2; exit 1; }
+          sed -i "s|career-api:phase14|${{ vars.AZURE_ACR_NAME }}.azurecr.io/global-career-api:${IMAGE_TAG}|g" /tmp/k8s/jobs/migrate.yaml
+          kubectl -n career-ai delete job career-migrate --ignore-not-found=true
+          kubectl apply -f /tmp/k8s/jobs/migrate.yaml
+          kubectl -n career-ai wait --for=condition=complete job/career-migrate --timeout=10m
+          kubectl apply -k /tmp/k8s/overlays/aks-deploy
+          kubectl -n career-ai rollout status deployment/career-api --timeout=10m
+          kubectl -n career-ai rollout status deployment/career-worker --timeout=10m
+          kubectl -n career-ai rollout status deployment/career-web --timeout=10m
