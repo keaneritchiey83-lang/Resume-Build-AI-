@@ -1,0 +1,86 @@
+name: Phase 15-17 release container image validation
+on:
+  push:
+    branches:
+      - release/phase15-17-ci-readiness-20261029
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            context: backend
+            dockerfile: backend/Dockerfile
+          - name: web
+            context: frontend
+            dockerfile: frontend/Dockerfile.prod
+          - name: runtime-sensor
+            context: runtime-sensor-gateway
+            dockerfile: runtime-sensor-gateway/Dockerfile
+    env:
+      CONTEXT: ${{ matrix.context }}
+      DOCKERFILE: ${{ matrix.dockerfile }}
+      IMAGE_NAME: ${{ matrix.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production release image without publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$DOCKERFILE"
+          docker build --file "$DOCKERFILE" --tag "gcai-${IMAGE_NAME}:${GITHUB_SHA}" "$CONTEXT"
+      - name: Verify application does not run as root
+        shell: bash
+        run: |
+          set -euo pipefail
+          user="$(docker image inspect --format '{{.Config.User}}' "gcai-${IMAGE_NAME}:${GITHUB_SHA}")"
+          test -n "$user"
+          case "$user" in root|0|0:*|root:*) echo "Container runs as root" >&2; exit 1 ;; esac
+          echo "Verified non-root image user for $IMAGE_NAME"
+      - name: Exercise sensor gateway health and missing-token fail-closed behavior
+        if: matrix.name == 'runtime-sensor'
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --detach --name gcai-sensor-smoke -p 127.0.0.1:18080:8080 "gcai-${IMAGE_NAME}:${GITHUB_SHA}"
+          python - <<'PY'
+          import json, time
+          from urllib.error import HTTPError, URLError
+          from urllib.request import Request, urlopen
+          base = "http://127.0.0.1:18080"
+          for attempt in range(50):
+              try:
+                  with urlopen(base + "/health", timeout=2) as response:
+                      assert response.status == 200
+                      assert json.loads(response.read())["status"] == "ok"
+                  break
+              except (URLError, OSError):
+                  time.sleep(1)
+          else:
+              raise AssertionError("Runtime sensor did not become healthy")
+          request = Request(base + "/falco", method="POST",
+              data=b'{"rule":"ci-synthetic-event"}',
+              headers={"Content-Type":"application/json"})
+          try:
+              with urlopen(request, timeout=5) as response:
+                  raise AssertionError(f"Unauthenticated forwarding succeeded: {response.status}")
+          except HTTPError as exc:
+              assert exc.code == 503, f"Expected token-missing 503, got {exc.code}"
+          print("Runtime sensor health OK; unauthorized event forwarding blocked")
+          PY
+      - name: Stop disposable runtime sensor
+        if: always() && matrix.name == 'runtime-sensor'
+        shell: bash
+        run: docker rm --force gcai-sensor-smoke 2>/dev/null || true
+
+# No registry push, cloud credentials, production deployment, or failover.
+# This is a build/runtime smoke gate, not independent cybersecurity certification.
